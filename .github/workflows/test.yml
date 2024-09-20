@@ -32,6 +32,8 @@ jobs:
         run: |
           pytest
       - name: Report Coverage
+        env: 
+          PYTHONPATH: ./src
         run: |
           pip install coverage
           coverage run -m pytest
