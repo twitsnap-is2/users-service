@@ -1,8 +1,10 @@
 from fastapi import FastAPI
-from .routers import router
+from routers.routers import router
+from middleware.error_middleware import ErrorHandlerMiddleware
 
 app = FastAPI()
 
+app.add_middleware(ErrorHandlerMiddleware)
 app.include_router(router)
 
 @app.get("/")
