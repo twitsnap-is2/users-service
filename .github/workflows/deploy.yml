@@ -27,8 +27,11 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: '16'
+    - name: Install Railway CLI
+      run: |
+        npm install -g @railway/cli
     - name: Deploy to Railway
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       run: |
-        npx railway up
+        railway up
