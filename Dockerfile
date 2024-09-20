@@ -5,6 +5,8 @@ WORKDIR /app
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
-COPY /src/ /app/
+#COPY /src/ /app/
+COPY . /app/
+ENV PYTHONPATH=/app/src
 
-CMD ["uvicorn", "main:app", "--port", "9212", "--host", "0.0.0.0", "--reload"]
+CMD ["uvicorn", "src.main:app", "--port", "9212", "--host", "0.0.0.0", "--reload"]
