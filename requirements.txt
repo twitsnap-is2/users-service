@@ -1,4 +1,7 @@
 fastapi
 uvicorn
+pydantic
+loguru
+SQLAlchemy
 httpx
 pytest

@@ -1,0 +1,7 @@
+src/routers/__pycache__/__init__.cpython-310.pyc
+src/routers/__pycache__/routers.cpython-310.pyc
+src/__pycache__/__init__.cpython-310.pyc
+src/__pycache__/main.cpython-310.pyc
+.env
+src/middleware/__pycache__/__init__.cpython-310.pyc
+src/middleware/__pycache__/error_middleware.cpython-310.pyc
