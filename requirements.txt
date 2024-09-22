@@ -3,5 +3,6 @@ uvicorn
 pydantic
 loguru
 SQLAlchemy
+psycopg2-binary
 httpx
 pytest

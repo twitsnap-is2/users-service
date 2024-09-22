@@ -1,46 +1,57 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, String
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
 from utils.engine import get_engine
-from bussiness_logic import models
+from business_logic.users.users_model import Users
+from business_logic.users.users_schemas import UserAccountCreate
+
 
 class Database:
-    def __init__(self, engine_url):
-        self.engine = create_engine(engine_url)
+    def __init__(self, engine):
+        self.engine = engine
         self.metadata = MetaData()
-        self.table = self.create_table()
+        self.users = self.create_table()
+        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
     def create_table(self):
-        table = Table(
-            "messages",
+        self.users = Table(
+            "users",
             self.metadata,
             Column("id", String, primary_key=True),
-            Column("message", String),
+            Column("username", String),
+            Column("mail", String),
+            Column("password", String),
+            schema="public"
         )
         try:
             with self.engine.connect() as connection:
-                table.drop(connection, checkfirst=True)  
                 self.metadata.create_all(connection) 
                 logger.info("Table created successfully")
         except SQLAlchemyError as e:
             logger.error(f"Error creating table: {e}")
-        return table
+        return self.users
 
-    def get_echomsg(self, echomsg_id: int):
-        return self.get_session().query(models.EchoMsg).filter(models.EchoMsg.id == echomsg_id).first()
+    def insert_user(self, user: UserAccountCreate):
+        session = self.SessionLocal()
+        try:
+            query = self.users.insert().values(
+                id=user.id, username=user.username, mail=user.mail, password=user.password
+            )
+            session.execute(query)
+            session.commit()
+        except IntegrityError as e:
+            logger.error(f"IntegrityError: {e}")
+            session.rollback()
+            return False
+        except SQLAlchemyError as e:
+            logger.error(f"SQLAlchemyError: {e}")
+            session.rollback()
+            return False
+        finally:
+            session.close()
+        return True
 
-    def create_echomsg(echomsg: schemas.EchoMsgCreate, echomsg_id: int):
-        db_echomsg = models.EchoMsg(msg=echomsg.msg, id=echomsg_id)
-        session = self.get_session()
-        session.add(db_echomsg)
-        session.commit()
-        session.refresh(db_echomsg)
-        return db_echomsg
-
-    def get_session(self):
-        Session = sessionmaker(bind=self.engine)
-        return Session()
 
     def clear_table(self):
 

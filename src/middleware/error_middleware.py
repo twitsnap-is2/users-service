@@ -1,32 +1,22 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.exceptions import HTTPException
+from pydantic import BaseModel
 
-class ErrorHandlerMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        try:
-            response = await call_next(request)
-            return response
-        except StarletteHTTPException as e:
-            return JSONResponse(
-                status_code=e.status_code,
-                content={
-                    "type": "about:blank",
-                    "title": e.detail,
-                    "status": e.status_code,
-                    "detail": e.detail,
-                    "instance": request.url.path,
-                },
-            )
-        except Exception as e:
-            return JSONResponse(
-                status_code=500,
-                content={
-                    "type": "about:blank",
-                    "title": "Internal Server Error",
-                    "status": 500,
-                    "detail": str(e),
-                    "instance": request.url.path,
-                },
-            )
+class ErrorResponse(BaseModel):
+    """
+    Class representing Error for a Response.
+
+    Attributes:
+        type: str (type of Error)
+        title: str (Title of the Error)
+        status: int (Status of Error) (400-404-500)
+        detail: str (Deatil of the Error)
+        instance: str (Instance of the Error)
+    """
+
+    type: str
+    title: str
+    status: int
+    detail: str
+    instance: str

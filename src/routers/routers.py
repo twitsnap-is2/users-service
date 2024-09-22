@@ -1,29 +1,24 @@
-from fastapi import APIRouter
-from business_logic.schemas import EchoMsg
+from fastapi import APIRouter, status, HTTPException
+from utils.engine import get_engine
+from business_logic.users.users_schemas import UserAccountBase
+from business_logic.users.users_service import UserAccountService
+from middleware.error_middleware import ErrorResponse
 
 router = APIRouter()
-services = Services(get_engine())
+services = UserAccountService(get_engine())
 
-@router.get("/hello")
-async def hello():
-    return {"message": "Hello from the /hello endpoint"}
-
-@router.get("/echo/{id}", response_model=EchoMsg)
-async def read_echomsg(id: int):
-    msg = services.get_echomsg(id)
-    if not msg:
-        raise HTTPException(status_code=404, detail="Message not found")
-    return msg
-
-@router.post("/echo", response_model=EchoMsg)
-async def create_echomsg(msg: EchoMsgCreate):
-    return services.insert_echomsg(msg)
-
-
-
-
-    
-
-    
-
-# Los routers son para los endopints. los diferenciamos en diferentes modulos. Por ejemplo si tenemos un endpoint para usuarios, lo ponemos en un modulo llamado users.py
+@router.post("/users", 
+    response_model = str,
+    status_code = status.HTTP_201_CREATED,
+    responses = {
+        201: {"description": "User created successfully"},
+        400: {"model": ErrorResponse},
+        422: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },)
+async def create_user(user: UserAccountBase):
+    try:
+        services.insert_useraccount(user)
+        return "User created successfully"
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error inserting user")

@@ -1,16 +1,17 @@
 from pydantic import BaseModel
 
-
-class EchoMsgBase(BaseModel):
-    msg: str
+class UserAccountBase(BaseModel):
+    username: str
+    mail: str
+    password: str
 
 # Inherits from base but contains id, needed for creation
-class EchoMsgCreate(EchoMsgBase):
-    id: int
+class UserAccountCreate(UserAccountBase):
+    id: str
 
 # Inherits from base but contains id, needed for response
-class EchoMsg(EchoMsgBase):
-    id: int
+class UserAccount(UserAccountBase):
+    id: str
  
     class Config:
         # orm_mode will tell the Pydantic model to read the data even if it is not a dict
