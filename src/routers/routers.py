@@ -15,6 +15,10 @@ async def read_echomsg(id: int):
         raise HTTPException(status_code=404, detail="Message not found")
     return msg
 
+@router.post("/echo", response_model=EchoMsg)
+async def create_echomsg(msg: EchoMsgCreate):
+    return services.insert_echomsg(msg)
+
 
 
 
