@@ -3,6 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
 from utils.engine import get_engine
+from bussiness_logic import models
 
 class Database:
     def __init__(self, engine_url):
@@ -25,6 +26,9 @@ class Database:
         except SQLAlchemyError as e:
             logger.error(f"Error creating table: {e}")
         return table
+
+    def get_echomsg(self):
+        return self.get_session().query(models.EchoMsg).filter(models.EchoMsg.id == user_id).first()
 
     def get_session(self):
         Session = sessionmaker(bind=self.engine)
