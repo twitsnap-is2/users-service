@@ -10,26 +10,16 @@ class Services:
     def __init__(self, engine_url):
         self.database = Database(engine_url)
 
-    def clear_table(self):
 
-        session = self.database.get_session()
+    def insert_echomsg(self, msg: str):
+        echomsg_id = 1
         try:
-            session.execute(self.database.table.delete())
-            session.commit()
-            logger.info("Table cleared successfully.")
-        except Exception as e:
-            logger.error(f"Error clearing table: {e}")
-            session.rollback()
-        finally:
-            session.close()
+            return self.database.create_echomsg(msg, echomsg_id)
+        except IntegrityError as e:
+            logger.error(f"Error inserting message: {e}")
+            raise e
 
-    def drop_table(self):
-        """
-        Drop the table from the database.
-        """
-        try:
-            with self.database.engine.connect() as connection:
-                self.database.table.drop(connection)
-                logger.info("Table dropped successfully.")
-        except Exception as e:
-            logger.error(f"Error dropping table: {e}")
+    def get_echomsg(self, echomsg_id: int):
+        return self.database.get_echomsg(echomsg_id)
+
+
