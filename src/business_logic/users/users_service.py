@@ -15,6 +15,11 @@ class UserAccountService:
         new_id = str(uuid4())
         new_user = UserAccountCreate(id=new_id, username=user.username, mail=user.mail, password=user.password)
         return self.database.insert_user(new_user)
+
+    def get_useraccounts(self):
+        users = self.database.get_users()
+        return list(map(lambda user: UserAccountBase(username=user.username, mail=user.mail, password=user.password), users))
+
         
 
 
