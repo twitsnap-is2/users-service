@@ -23,5 +23,13 @@ services:
       POSTGRES_HOST: ${POSTGRES_HOST}
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
-    container_name:
-      db_container
+    container_name: db_container
+
+  tests:
+    build:
+      context: ./
+      dockerfile: Dockerfile  # Usa el mismo Dockerfile o un Dockerfile de test específico
+    env_file: ".env"
+    depends_on:
+      - db_container
+    command: ["pytest", "/app/tests"] 

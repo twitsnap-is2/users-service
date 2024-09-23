@@ -2,6 +2,7 @@ fastapi
 uvicorn
 pydantic
 loguru
+python-dotenv
 SQLAlchemy
 psycopg2-binary
 httpx

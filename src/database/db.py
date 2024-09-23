@@ -71,16 +71,16 @@ class Database:
 
     def clear_table(self):
 
-        session = self.get_session()
-        try:
-            session.execute(self.table.delete())
-            session.commit()
-            logger.info("Table cleared successfully.")
-        except Exception as e:
-            logger.error(f"Error clearing table: {e}")
-            session.rollback()
-        finally:
-            session.close()
+        with Session(self.engine) as session:
+            try:
+                session.execute(self.table.delete())
+                session.commit()
+                logger.info("Table cleared successfully.")
+            except Exception as e:
+                logger.error(f"Error clearing table: {e}")
+                session.rollback()
+            finally:
+                session.close()
 
     def drop_table(self):
         """
