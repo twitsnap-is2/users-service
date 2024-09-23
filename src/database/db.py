@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from loguru import logger
 from utils.engine import get_engine
 from business_logic.users.users_model import Users
-from business_logic.users.users_schemas import UserAccountCreate
+from business_logic.users.users_schemas import UserAccountBase
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from business_logic.users.users_model import Base
@@ -31,8 +31,8 @@ class Database:
                 logger.info("Table does not exist")
 
 
-    def insert_user(self, user: UserAccountCreate):
-        user_model_instance = Users(id=user.id, username=user.username, mail=user.mail, password=user.password)
+    def insert_user(self, user: UserAccountBase):
+        user_model_instance = Users(username=user.username, mail=user.mail, password=user.password)
         with Session(self.engine) as session:
             try: 
                 session.add(user_model_instance)

@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging as logger
 from sqlalchemy.orm import Session
 from database.db import Database
-from business_logic.users.users_schemas import UserAccountBase, UserAccountCreate
+from business_logic.users.users_schemas import UserAccountBase
 from uuid import uuid4
 
 class UserAccountService:
@@ -12,9 +12,7 @@ class UserAccountService:
         self.database = Database(engine)
 
     def insert_useraccount(self, user: UserAccountBase):
-        new_id = str(uuid4())
-        new_user = UserAccountCreate(id=new_id, username=user.username, mail=user.mail, password=user.password)
-        return self.database.insert_user(new_user)
+        return self.database.insert_user(user)
 
     def get_useraccounts(self):
         users = self.database.get_users()
