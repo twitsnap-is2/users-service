@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class UserAccountBase(BaseModel):
     username: str
@@ -12,7 +12,6 @@ class UserAccountBase(BaseModel):
 # Inherits from base but contains id, needed for response
 class UserAccount(UserAccountBase):
     id: str
+
+    model_config = ConfigDict(from_attributes=True)
  
-    class Config:
-        # orm_mode will tell the Pydantic model to read the data even if it is not a dict
-        orm_mode = True

@@ -19,7 +19,9 @@ class Users(Base):
     username = Column(String, unique=True)
     mail = Column(String, unique=True)
     password = Column(String)
-    # createdAt 
+    # createdAt
+    # table user info
+    # Location
     # interests
 
     def __repr__(self) -> str:
