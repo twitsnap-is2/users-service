@@ -12,7 +12,7 @@ def setup():
     db = Database(get_engine())
     db.create_table()
     db.clear_table()
-    yield
+    yield db
     db.clear_table()
     db.drop_table()
 

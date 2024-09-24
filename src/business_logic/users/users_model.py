@@ -21,8 +21,8 @@ class Users(Base):
     username = Column(String, unique=True)
     name = Column(String)
     email = Column(String, unique=True)
-    profilePic = Column(String)
-    createdAt = Column(DateTime, default=datetime.datetime.utcnow)
+    profilepic = Column(String)
+    createdat = Column(DateTime, default=datetime.datetime.utcnow)
 
     userinfo = relationship("UserInfo", back_populates="user")
 

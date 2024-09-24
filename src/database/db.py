@@ -4,10 +4,11 @@ from sqlalchemy.orm import sessionmaker
 from loguru import logger
 from utils.engine import get_engine
 from business_logic.users.users_model import Users, UserInfo
-from business_logic.users.users_schemas import UserAccountBase
+from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from business_logic.users.users_model import Base
+from datetime import datetime, timedelta, timezone
 
 class Database:
     def __init__(self, engine):
@@ -38,7 +39,9 @@ class Database:
                 logger.info("Table 'userinfo' does not exist")
 
     def insert_user(self, user: UserAccountBase):
-        user_model_instance = Users(username=user.username, name=user.name, email=user.email)
+        local_timezone = timezone(timedelta(hours=-3))
+        timestamp = datetime.now(local_timezone).isoformat()
+        user_model_instance = Users(username=user.username, name=user.name, email=user.email, profilepic=None, createdat=timestamp)
         userinfo_model_instance = UserInfo(birthdate=user.birthdate, location=user.location)
         user_model_instance.userinfo.append(userinfo_model_instance)
         with Session(self.engine) as session:
@@ -81,8 +84,8 @@ class Database:
 
         with Session(self.engine) as session:
             try:
-                session.execute(self.users_table.delete())
                 session.execute(self.userinfo_table.delete())
+                session.execute(self.users_table.delete())
                 session.commit()
                 logger.info("Tables cleared successfully.")
             except Exception as e:

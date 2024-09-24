@@ -23,7 +23,7 @@ async def create_user(user: UserAccountBase):
         user = services.insert_useraccount(user)
         if isinstance(user, UserCreationResponse):
             logger.info("User created successfully")
-        return { new_user }
+        return user
     except Exception as e:
         logger.error(f"Error inserting user: {e}")
         raise HTTPException(status_code=400, detail="Error inserting user")
