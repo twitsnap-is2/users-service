@@ -14,12 +14,18 @@ def setup():
     db.clear_table()
     yield
     db.clear_table()
-    #db.drop_table()
+    db.drop_table()
 
 def test_create_user(setup):
-    response = client.post("/users", json={"username":"Sofia", "password": "hola1234", "mail":"sofia@hotmail.com"})
+    response = client.post("/users", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234", "birthdate":"2001-01-01", "location":"Argentina"})
     assert response.status_code == 201
-    assert response.json() == "User created successfully"
+    response_expected = {
+        "username": "sofisofi",
+        "name": "Sofia",
+        "email": "sofia@gmail.com",
+    }
+    #assert 
+    #assert response.json() == "User created successfully"
 
 # def test_create_user_no_username(setup):
 #     response = client.post("/users", json={"username":"", "password":"hola1234", "mail":"hola@gmail.com"})

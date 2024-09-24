@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
 from utils.engine import get_engine
-from business_logic.users.users_model import Users
+from business_logic.users.users_model import Users, UserInfo
 from business_logic.users.users_schemas import UserAccountBase
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -12,6 +12,8 @@ from business_logic.users.users_model import Base
 class Database:
     def __init__(self, engine):
         self.engine = engine
+        self.users_table = Users.__table__
+        self.userinfo_table = UserInfo.__table__
         self.create_table()
 
     def create_table(self):
@@ -24,15 +26,21 @@ class Database:
                 logger.error(f"Error creating table: {e}")
                 connection.rollback()
 
-            table_exists = connection.dialect.has_table(connection, "users")
-            if table_exists:
-                logger.info("Table exists")
+            table_user_exists = connection.dialect.has_table(connection, "users") 
+            if table_user_exists:
+                logger.info("Table 'users' exists")
             else:
                 logger.info("Table does not exist")
 
+            if connection.dialect.has_table(connection, "userinfo"):
+                logger.info("Table 'userinfo' exists")
+            else:
+                logger.info("Table 'userinfo' does not exist")
 
     def insert_user(self, user: UserAccountBase):
-        user_model_instance = Users(username=user.username, mail=user.mail, password=user.password)
+        user_model_instance = Users(username=user.username, name=user.name, email=user.email)
+        userinfo_model_instance = UserInfo(birthdate=user.birthdate, location=user.location)
+        user_model_instance.userinfo.append(userinfo_model_instance)
         with Session(self.engine) as session:
             try: 
                 session.add(user_model_instance)
@@ -50,7 +58,7 @@ class Database:
             finally:
                 session.close()
 
-        return True
+        return UserCreationResponse(username=user.username, email=user.email, name=user.name, birthdate=user.birthdate, location=user.location)
 
 
     def get_users(self):
@@ -73,11 +81,12 @@ class Database:
 
         with Session(self.engine) as session:
             try:
-                session.execute(self.table.delete())
+                session.execute(self.users_table.delete())
+                session.execute(self.userinfo_table.delete())
                 session.commit()
-                logger.info("Table cleared successfully.")
+                logger.info("Tables cleared successfully.")
             except Exception as e:
-                logger.error(f"Error clearing table: {e}")
+                logger.error(f"Error clearing tables: {e}")
                 session.rollback()
             finally:
                 session.close()
@@ -88,7 +97,8 @@ class Database:
         """
         try:
             with self.engine.connect() as connection:
-                self.table.drop(connection)
-                logger.info("Table dropped successfully.")
+                self.userinfo_table.drop(connection)
+                self.users_table.drop(connection)
+                logger.info("Tables dropped successfully.")
         except Exception as e:
             logger.error(f"Error dropping table: {e}")
