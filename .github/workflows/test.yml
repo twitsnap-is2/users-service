@@ -18,7 +18,12 @@ jobs:
     
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+      
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
