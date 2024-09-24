@@ -13,10 +13,10 @@ def get_engine() -> Optional[create_engine]:
     
     # Construcción manual de la URL
    # database_url = f"postgresql://{user}:{password}@{host}:{port}/{db}"
-   database_url = os.getenv('DATABASE_URL')
-   if not database_url:
-       logger.error("No database URL found")
-       return ValueError("No database URL found")
+    database_url = os.getenv('DATABASE_URL')
+    if not database_url:
+        logger.error("No database URL found")
+        return ValueError("No database URL found")
     
     logger.info("Connecting Database via URL")
     
