@@ -60,5 +60,5 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
     return JSONResponse(
         status_code=status_code,
-        content=error_response.dict(),
+        content=error_response.model_dump(),
     )

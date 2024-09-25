@@ -22,6 +22,7 @@ else:
         500: {"model": ErrorResponse},
     },)
 async def create_user(user: UserAccountBase):
+    logger.debug(user.model_dump_json())
     try:
         user = services.insert_useraccount(user)
         if isinstance(user, UserCreationResponse):
@@ -75,4 +76,3 @@ async def get_user(user_id: str):
     except Exception as e:
         logger.error(f"Internal server error retrieving user: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
-            

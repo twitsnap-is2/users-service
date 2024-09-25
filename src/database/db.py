@@ -53,11 +53,11 @@ class Database:
             except IntegrityError as e:
                 logger.error(f"IntegrityError: {e}")
                 session.rollback()
-                return False
+                raise e
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
                 session.rollback()
-                return False
+                raise e
             finally:
                 session.close()
 
