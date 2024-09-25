@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, HTTPException
-from utils.engine import get_engine, get_test_engine
+from utils.engine import get_engine
 from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse
 from business_logic.users.users_service import UserAccountService
 from middleware.error_middleware import ErrorResponse
@@ -7,10 +7,7 @@ from loguru import logger
 import os
 
 router = APIRouter()
-if os.getenv("TEST_ENV") == "true":
-    services = UserAccountService(get_test_engine())
-else:
-    services = UserAccountService(get_engine())
+services = UserAccountService(get_engine())
 
 @router.post("/users", 
     response_model = UserCreationResponse,

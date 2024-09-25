@@ -4,14 +4,14 @@ from src.main import app
 from loguru import logger
 #from src.routers.routers import router
 from database.db import Database
-from utils.engine import get_test_engine
+from utils.engine import get_engine
 from business_logic.users.users_schemas import UserAccountBase
 
 client = TestClient(app)
 
 @pytest.fixture(scope="function")
 def setup():
-    db = Database(get_test_engine())
+    db = Database(get_engine())
     db.create_table()
     db.clear_table()
     yield db
