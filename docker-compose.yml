@@ -21,8 +21,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: ${POSTGRES_HOST}
+      RAILWAY_RUN_UID: 0
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - ${RAILWAY_VOLUME_MOUNT_PATH}:/var/lib/postgresql/data
     container_name: db_container
 
   tests:
