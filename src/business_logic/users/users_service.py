@@ -12,6 +12,8 @@ class UserAccountService:
         self.database = Database(engine)
 
     def insert_useraccount(self, user: UserAccountBase):
+        if not user.username:
+            raise ValueError("Username is required")
         return self.database.insert_user(user)
 
     def get_useraccounts(self):
