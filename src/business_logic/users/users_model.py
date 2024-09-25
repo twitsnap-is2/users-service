@@ -24,7 +24,7 @@ class Users(Base):
     profilepic = Column(String)
     createdat = Column(DateTime, default=datetime.datetime.utcnow)
 
-    userinfo = relationship("UserInfo", back_populates="user")
+    userinfo = relationship("UserInfo", back_populates="user", uselist=False)
 
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, username={self.username!r}, email={self.email!r})"
@@ -36,7 +36,7 @@ class UserInfo(Base):
     location = Column(String)
     interests = Column(String)
 
-    user = relationship("Users", back_populates="userinfo")
+    user = relationship("Users", back_populates="userinfo", uselist=False)
 
     def __repr__(self) -> str:
         return f"UserInfo(id={self.id!r}, user_id={self.user_id!r}, birthdate={self.birthdate!r}, location={self.location!r}, interests={self.interests!r})"

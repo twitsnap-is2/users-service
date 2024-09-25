@@ -29,7 +29,7 @@ async def create_user(user: UserAccountBase):
         raise HTTPException(status_code=400, detail="Error inserting user")
 
 @router.get("/users", 
-    response_model = list[UserAccountBase],
+    response_model = list[UserCreationResponse],
     status_code = status.HTTP_200_OK,
     responses = {
         200: {"description": "User list retrieved successfully"},

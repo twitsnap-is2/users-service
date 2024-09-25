@@ -19,9 +19,10 @@ class UserAccount(UserAccountBase):
 class UserCreationResponse(BaseModel):
     id: UUID
     username: str
-    email: str
     name: str
+    email: str
     birthdate: str
     created_at: str
+    profilepic: str | None = None
 
     model_config = ConfigDict(from_attributes=True)

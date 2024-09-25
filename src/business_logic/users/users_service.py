@@ -15,8 +15,8 @@ class UserAccountService:
         return self.database.insert_user(user)
 
     def get_useraccounts(self):
-        users = self.database.get_users()
-        return list(map(lambda user: UserAccountBase(username=user.username, mail=user.mail, password=user.password), users))
+        return self.database.get_users()
+        #return list(map(lambda user: UserCreationResponse(username=user.username, email=user.email, password=user.password), users))
 
         
 

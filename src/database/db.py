@@ -43,7 +43,7 @@ class Database:
         timestamp = datetime.now(local_timezone).isoformat()
         user_model_instance = Users(username=user.username, name=user.name, email=user.email, profilepic=None, createdat=timestamp)
         userinfo_model_instance = UserInfo(birthdate=user.birthdate, location=user.location)
-        user_model_instance.userinfo.append(userinfo_model_instance)
+        user_model_instance.userinfo = userinfo_model_instance
         with Session(self.engine) as session:
             try: 
                 session.add(user_model_instance)
@@ -68,16 +68,25 @@ class Database:
         with Session(self.engine) as session:
             try:
                 statement = select(Users)
-                users = session.scalars(statement).all()
+                user_objects = session.scalars(statement).all()
                 logger.info("Users retrieved successfully")
+                for user in user_objects:
+                    user_creation_response = UserCreationResponse(
+                        id=user.id,
+                        username=user.username,
+                        name=user.name,
+                        email=user.email,
+                        birthdate=user.userinfo.birthdate,
+                        created_at=user.createdat.isoformat(),
+                        profilepic=user.profilepic
+                    )
+                users.append(user_creation_response)
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
             finally:
                 session.close()
-
+        logger.info(f"Users RETURNED: {users}")
         return users
-        
-
 
     def clear_table(self):
 
