@@ -3,13 +3,13 @@ import pytest
 from src.main import app 
 #from src.routers.routers import router
 from database.db import Database
-from utils.engine import get_engine
+from utils.engine import get_test_engine
 
 client = TestClient(app)
 
 @pytest.fixture(scope="function")
 def setup():
-    db = Database(get_engine())
+    db = Database(get_test_engine())
     db.create_table()
     db.clear_table()
     yield db

@@ -2,7 +2,6 @@ from sqlalchemy import create_engine, MetaData, Table, Column, String
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
-from utils.engine import get_engine
 from business_logic.users.users_model import Users, UserInfo
 from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse
 from sqlalchemy.orm import Session
