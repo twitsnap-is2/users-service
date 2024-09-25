@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     env_file: ".env"
     ports:
-      - "${EXTERNAL_SERVICES_API_PORT}:${SERVICES_API_PORT}"
+      - "${SERVICES_API_PORT}:9212"
     volumes:
       - ./src:/app/src
     restart: unless-stopped
