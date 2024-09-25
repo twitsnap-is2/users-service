@@ -18,13 +18,6 @@ def setup():
     db.clear_table()
     db.drop_table()
 
-    username: str
-    name: str
-    email: str
-    password: str
-    birthdate: str
-    location: str
-
 def test_create_user(setup):
     response = client.post("/users", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234", "birthdate":"2001-01-01", "location":"Argentina"})
     assert response.status_code == 201

@@ -25,22 +25,3 @@ services:
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     container_name: db_container
-
-  tests:
-    build:
-      context: ./
-      dockerfile: Dockerfile 
-    env_file: ".env"
-    depends_on:
-      - test_db_container
-    command: ["pytest", "/app/tests"] 
-
-  test_db_container:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: ${TEST_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${TEST_POSTGRES_DB}
-      POSTGRES_HOST: ${TEST_POSTGRES_HOST}
-    ports:
-      - "${TEST_POSTGRES_PORT}:${TEST_POSTGRES_PORT}"  # Puedes cambiar el puerto si es necesario

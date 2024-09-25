@@ -1,0 +1,27 @@
+
+services:
+
+  tests:
+    build:
+      context: ./
+      dockerfile: Dockerfile 
+    env_file:
+      - .env.test
+    depends_on:
+      - test_db_container
+    command: ["pytest", "/app/tests"] 
+    networks:
+      - test_network
+
+  test_db_container:
+    image: postgres:13
+    env_file:
+      - .env.test
+    ports:
+      - "${TEST_POSTGRES_PORT}:${TEST_POSTGRES_PORT}"  # Puedes cambiar el puerto si es necesario
+    networks:
+      - test_network
+
+networks:
+  test_network:
+    driver: bridge
