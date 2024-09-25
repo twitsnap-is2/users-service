@@ -3,8 +3,16 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from routers.routers import router
 from middleware.error_middleware import ErrorResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # It will only allow certain types of communication, excluding everything that involves credentials: Cookies, Authorization headers like those used with Bearer Tokens, etc.
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(router)
 
 @app.exception_handler(HTTPException)

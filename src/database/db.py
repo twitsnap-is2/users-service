@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from business_logic.users.users_model import Base
 from datetime import datetime, timedelta, timezone
+from uuid import UUID
 
 class Database:
     def __init__(self, engine):
@@ -62,6 +63,26 @@ class Database:
                 session.close()
 
         return new_user
+    
+    def get_user_by_id(self, user_id: str):
+        with Session(self.engine) as session:
+            try:
+                statement = select(Users).where(Users.id == UUID(user_id))
+                user = session.scalars(statement).one()
+                user_creation_response = UserCreationResponse(
+                    id=user.id,
+                    username=user.username,
+                    name=user.name,
+                    email=user.email,
+                    birthdate=user.userinfo.birthdate,
+                    created_at=user.createdat.isoformat(),
+                    profilepic=user.profilepic
+                )
+                logger.info("User retrieved successfully")
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemyError: {e}")
+
+        return user_creation_response
 
     def get_users(self):
         users = []

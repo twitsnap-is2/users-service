@@ -16,6 +16,7 @@ class UserAccountService:
 
     def get_useraccounts(self):
         return self.database.get_users()
-        
 
+    def get_useraccount(self, user_id: str):
+        return self.database.get_user_by_id(user_id)
 
