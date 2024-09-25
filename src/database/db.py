@@ -49,7 +49,7 @@ class Database:
                 session.add(user_model_instance)
                 session.commit()
                 logger.info("User inserted successfully")
-            
+                new_user = UserCreationResponse(id=user_model_instance.id, username=user.username, email=user.email, name=user.name, birthdate=user.birthdate, created_at=timestamp)
             except IntegrityError as e:
                 logger.error(f"IntegrityError: {e}")
                 session.rollback()
@@ -61,8 +61,7 @@ class Database:
             finally:
                 session.close()
 
-        return UserCreationResponse(username=user.username, email=user.email, name=user.name, birthdate=user.birthdate, location=user.location)
-
+        return new_user
 
     def get_users(self):
         users = []

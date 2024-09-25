@@ -27,12 +27,11 @@ class Users(Base):
     userinfo = relationship("UserInfo", back_populates="user")
 
     def __repr__(self) -> str:
-        return f"User(id={self.id!r}, username={self.username!r}, email={self.mail!r})"
+        return f"User(id={self.id!r}, username={self.username!r}, email={self.email!r})"
 
 class UserInfo(Base):
     __tablename__ = "userinfo"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True, nullable=False)
     birthdate = Column(String)
     location = Column(String)
     interests = Column(String)
