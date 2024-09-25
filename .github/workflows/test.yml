@@ -35,6 +35,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      - name: Wait for Test DB
+        run: |
+          echo "Waiting for Test DB to be ready..."
+          until nc -z ${{ secrets.TEST_POSTGRES_HOST }} ${{ secrets.TEST_POSTGRES_PORT }}; do
+            echo "Waiting for Test DB to start..."
+            sleep 5
+          done
       - name: Run tests
         env: 
           PYTHONPATH: ./src
