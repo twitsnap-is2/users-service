@@ -21,14 +21,18 @@ jobs:
         image: postgres:13
         ports:
           - 5432:5432
-      env:
-        TEST_ENV: true
-        TEST_POSTGRES_USER: postgres
-        TEST_POSTGRES_PASSWORD: password_ps
-        TEST_POSTGRES_DB: test_db
-        TEST_POSTGRES_PORT: 5432
-        TEST_POSTGRES_HOST: localhost
-      
+        env: 
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password_ps
+          POSTGRES_DB: test_db
+    env:
+      TEST_ENV: true
+      TEST_POSTGRES_USER: postgres
+      TEST_POSTGRES_PASSWORD: password_ps
+      TEST_POSTGRES_DB: test_db
+      TEST_POSTGRES_PORT: 5432
+      TEST_POSTGRES_HOST: localhost
+    
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
