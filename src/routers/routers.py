@@ -47,3 +47,29 @@ async def get_users():
     except Exception as e:
         logger.error(f"Internal server error retrieving users: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.get("/users/{user_id}",
+    response_model = UserCreationResponse,
+    status_code = status.HTTP_200_OK,
+    responses = {
+        200: {"description": "User retrieved successfully"},
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },)
+async def get_user(user_id: str):
+    try:
+        user = services.get_useraccount(user_id)
+        if user:
+            logger.info("User retrieved successfully")
+            return user
+        else:
+            logger.error("User not found")
+            raise HTTPException(status_code=404, detail="User not found")
+    except ValueError as e:
+        logger.error(f"Error retrieving user: {e}")
+        raise HTTPException(status_code=400, detail="Error retrieving user")
+    except Exception as e:
+        logger.error(f"Internal server error retrieving user: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+            
