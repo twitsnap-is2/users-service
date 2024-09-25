@@ -80,7 +80,7 @@ class Database:
                         created_at=user.createdat.isoformat(),
                         profilepic=user.profilepic
                     )
-                users.append(user_creation_response)
+                    users.append(user_creation_response)
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
             finally:

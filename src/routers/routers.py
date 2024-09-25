@@ -38,9 +38,12 @@ async def create_user(user: UserAccountBase):
     },)
 async def get_users():
     try:
-        return services.get_useraccounts()
+        users = services.get_useraccounts()
         logger.info("User list retrieved successfully")
-    except Exception as e:
+        return users
+    except ValueError as e:
         logger.error(f"Error retrieving users: {e}")
         raise HTTPException(status_code=400, detail="Error retrieving users")
-
+    except Exception as e:
+        logger.error(f"Internal server error retrieving users: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")

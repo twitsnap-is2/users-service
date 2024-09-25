@@ -16,8 +16,6 @@ class UserAccountService:
 
     def get_useraccounts(self):
         return self.database.get_users()
-        #return list(map(lambda user: UserCreationResponse(username=user.username, email=user.email, password=user.password), users))
-
         
 
 
