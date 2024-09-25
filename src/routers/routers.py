@@ -38,9 +38,27 @@ async def create_user(user: UserAccountBase):
     },)
 async def get_users():
     try:
-        return services.get_useraccounts()
+        users = services.get_useraccounts()
         logger.info("User list retrieved successfully")
+        return users
     except Exception as e:
         logger.error(f"Error retrieving users: {e}")
         raise HTTPException(status_code=400, detail="Error retrieving users")
 
+@router.get("/users/{user_id}",
+    response_model = UserCreationResponse,
+    status_code = status.HTTP_200_OK,
+    responses = {
+        200: {"description": "User retrieved successfully"},
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },)
+async def get_user(user_id: str):
+    try:
+        user = services.get_useraccount(user_id)
+        logger.info("User retrieved successfully")
+        return user
+    except Exception as e:
+        logger.error(f"Error retrieving user: {e}")
+        raise HTTPException(status_code=404, detail="User not found")

@@ -18,6 +18,6 @@ class UserAccountService:
         return self.database.get_users()
         #return list(map(lambda user: UserCreationResponse(username=user.username, email=user.email, password=user.password), users))
 
-        
-
+    def get_useraccount(self, user_id: str):
+        return self.database.get_user_by_id(user_id)
 
