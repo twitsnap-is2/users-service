@@ -20,3 +20,24 @@ class ErrorResponse(BaseModel):
     status: int
     detail: str
     instance: str
+    errors: dict
+
+class ErrorResponseException(Exception):
+    """
+    Class representing Error for a Response.
+
+    Attributes:
+        type: str (type of Error)
+        title: str (Title of the Error)
+        status: int (Status of Error) (400-404-500)
+        detail: str (Deatil of the Error)
+        instance: str (Instance of the Error)
+    """
+    def __init__(self, type: str, title: str, status: int, detail: str, instance: str, errors: dict):
+        self.type = type
+        self.title = title
+        self.status = status
+        self.detail = detail
+        self.instance = instance
+        self.errors = errors
+

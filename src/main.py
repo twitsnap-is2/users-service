@@ -2,8 +2,9 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from routers.routers import router
-from middleware.error_middleware import ErrorResponse
+from middleware.error_middleware import ErrorResponse, ErrorResponseException
 from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 app.add_middleware(
@@ -61,4 +62,19 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     return JSONResponse(
         status_code=status_code,
         content=error_response.model_dump(),
+    )
+
+@app.exception_handler(ErrorResponseException)
+async def validation_exception_handler(request: Request, exc: ErrorResponseException):
+
+    return JSONResponse(
+        status_code=exc.status,
+        content={
+            "type": exc.type,
+            "title": exc.title,
+            "status": exc.status,
+            "detail": exc.detail,
+            "instance": exc.instance,
+            "errors": exc.errors,
+        },
     )

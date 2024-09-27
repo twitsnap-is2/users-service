@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, HTTPException
 from utils.engine import get_engine
 from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse
 from business_logic.users.users_service import UserAccountService
-from middleware.error_middleware import ErrorResponse
+from middleware.error_middleware import ErrorResponse, ErrorResponseException
 from loguru import logger
 import os
 
@@ -26,6 +26,25 @@ async def create_user(user: UserAccountBase):
             logger.info("User created successfully")
         return user
     except Exception as e:
+        error_message = str(e)
+        if "duplicate key value violates unique constraint \"users_username_key\"" in error_message:
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/400",
+                title="Bad Request",
+                status=400,
+                detail="User already exists",
+                instance=os.getenv("API_INSTANCE"),
+                errors={"username": "User already exists"}
+            )
+        if "duplicate key value violates unique constraint \"users_email_key\"" in error_message:
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/400",
+                title="Bad Request",
+                status=400,
+                detail="Email already exists",
+                instance=os.getenv("API_INSTANCE"),
+                errors={"email": "Email already exists"}
+            )
         logger.error(f"Error inserting user: {e}")
         raise HTTPException(status_code=400, detail="Error inserting user")
 
