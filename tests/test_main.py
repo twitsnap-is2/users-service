@@ -132,4 +132,16 @@ def test_create_user_with_invalid_schema(setup):
     assert response4.json() == response_expected
     assert response5.json() == response_expected
 
+def test_get_user_not_found(setup):
+    response = client.get("/users/hola/email")
+    assert response.status_code == 404
+    response_expected = {
+        "type": "https://httpstatuses.com/404",
+        "title": "User not found",
+        "status": 404,
+        "detail": "User not found",
+        "instance": "/users/hola/email",
+        "errors": {"email": "email not found"}
+    }
 
+    assert response.json() == response_expected

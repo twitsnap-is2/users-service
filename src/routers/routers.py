@@ -113,11 +113,11 @@ async def get_email_by_username(username: str):
     except HTTPException as e:
         if e.status_code == 404:
             raise ErrorResponseException(
-                type="https://httpstatuses.com/400",
-                title="Bad Request",
-                status=400,
+                type="https://httpstatuses.com/404",
+                title="User not found",
+                status=404,
                 detail="User not found",
-                instance=os.getenv("API_INSTANCE"),
+                instance="/users/{username}/email",
                 errors={"email": "email not found"}
             )
     except ValueError as e:
