@@ -74,7 +74,7 @@ async def validation_exception_handler(request: Request, exc: ErrorResponseExcep
             "title": exc.title,
             "status": exc.status,
             "detail": exc.detail,
-            "instance": exc.instance,
+            "instance": str(request.url.path),
             "errors": exc.errors,
         },
     )

@@ -27,9 +27,6 @@ def test_create_user(setup):
     assert response_data["email"] == "sofia@gmail.com"
     assert response_data["birthdate"] == "2001-01-01"
 
-
-
-
 def test_collect_users(setup):
     response_post1 = client.post("/users", json={"username":"sofisofi1", "name":"Sofia", "email":"sofia1@gmail.com", "password": "hola1234", "birthdate":"2001-01-01", "location":"Argentina"})
     response_post2 = client.post("/users", json={"username":"sofisofi2", "name":"Sofia", "email":"sofia2@gmail.com", "password": "hola1234", "birthdate":"2001-01-01", "location":"Argentina"})
@@ -69,6 +66,7 @@ def test_create_user_no_username(setup):
         "status": 400,
         "detail": "Error inserting user",
         "instance": "/users",
+        "errors": None
     }
 
     assert response.json() == response_expected
@@ -80,11 +78,12 @@ def test_create_more_than_one_user_with_same_username(setup):
     assert response_post1.status_code == 201
     assert response_post2.status_code == 400
     response_expected = {
-        "type": "about:blank",
+        "type": "https://httpstatuses.com/400",
         "title": "Bad Request",
         "status": 400,
-        "detail": "Error inserting user",
-        "instance": "/users"
+        "detail": "User already exists",
+        "instance": "/users",
+        "errors": {"username": "User already exists"}
     }
 
     assert response_post2.json() == response_expected
@@ -96,11 +95,12 @@ def test_create_more_than_one_user_with_same_email(setup):
     assert response_post1.status_code == 201
     assert response_post2.status_code == 400
     response_expected = {
-        "type": "about:blank",
+        "type": "https://httpstatuses.com/400",
         "title": "Bad Request",
         "status": 400,
-        "detail": "Error inserting user",
-        "instance": "/users"
+        "detail": "Email already exists",
+        "instance": "/users",
+        "errors": {"email": "Email already exists"}
     }
 
     assert response_post2.json() == response_expected
@@ -123,7 +123,8 @@ def test_create_user_with_invalid_schema(setup):
         "title": "Validation Error",
         "status": 422,
         "detail": "JSON decode error",
-        "instance": "/users"
+        "instance": "/users",
+        "errors": None
     }
     assert response1.json() == response_expected
     assert response2.json() == response_expected
