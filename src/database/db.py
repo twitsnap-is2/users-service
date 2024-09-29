@@ -68,7 +68,6 @@ class Database:
             try:
                 statement = select(Users).where(Users.id == UUID(user_id))
                 user = session.scalars(statement).one()
-                user.userinfo
                 user_creation_response = UserInfoResponse(
                     id=user.id,
                     username=user.username,
@@ -76,10 +75,10 @@ class Database:
                     email=user.email,
                     created_at=user.createdat.isoformat(),
                     profilepic=user.profilepic,
-                    birthdate=user.userinfo.birthdate,
-                    locationLat=user.userinfo.locationLat,
-                    locationLong=user.userinfo.locationLong,
-                    interests=user.userinfo.interests
+                    birthdate=user.userinfo.birthdate if user.userinfo else None,
+                    locationLat=user.userinfo.locationLat  if user.userinfo else None,
+                    locationLong=user.userinfo.locationLong  if user.userinfo else None,
+                    interests=user.userinfo.interests if user.userinfo else None
                 )
                 logger.info("User retrieved successfully")  
                 return user_creation_response
@@ -115,7 +114,6 @@ class Database:
                         username=user.username,
                         name=user.name,
                         email=user.email,
-                        birthdate=user.userinfo.birthdate,
                         created_at=user.createdat.isoformat(),
                         profilepic=user.profilepic
                     )

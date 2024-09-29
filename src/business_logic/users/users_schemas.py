@@ -25,9 +25,9 @@ class UserCreationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class UserInfoResponse(UserCreationResponse):
-    birthdate: str
-    locationLat: float
-    locationLong: float
+    birthdate: str | None = None
+    locationLat: float | None = None
+    locationLong: float | None = None
     interests: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
