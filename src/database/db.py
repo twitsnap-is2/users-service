@@ -77,11 +77,11 @@ class Database:
                     created_at=user.createdat.isoformat(),
                     profilepic=user.profilepic
                 )
-                logger.info("User retrieved successfully")
+                logger.info("User retrieved successfully")  
+                return user_creation_response
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
 
-        return user_creation_response
 
     def get_email_by_username(self, username: str):
         with Session(self.engine) as session:

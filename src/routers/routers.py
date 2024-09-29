@@ -85,7 +85,15 @@ async def get_user(user_id: str):
             return user
         else:
             logger.error("User not found")
-            raise HTTPException(status_code=404, detail="User not found")
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/404",
+                title="User not found",
+                status=404,
+                detail="User not found",
+                instance="/users/{user_id}"
+            )
+    except ErrorResponseException as e:
+        raise e
     except ValueError as e:
         logger.error(f"Error retrieving user: {e}")
         raise HTTPException(status_code=400, detail="Error retrieving user")

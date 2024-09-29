@@ -34,7 +34,7 @@ class ErrorResponseException(Exception):
         detail: str (Deatil of the Error)
         instance: str (Instance of the Error)
     """
-    def __init__(self, type: str, title: str, status: int, detail: str, instance: str, errors: dict):
+    def __init__(self, type: str, title: str, status: int, detail: str, instance: str, errors: dict | None = None):
         self.type = type
         self.title = title
         self.status = status
