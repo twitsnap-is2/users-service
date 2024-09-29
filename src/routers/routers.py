@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, HTTPException
 from utils.engine import get_engine
-from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse
+from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation, UserEmailResponse, UserInfoResponse
 from business_logic.users.users_service import UserAccountService
 from middleware.error_middleware import ErrorResponse, ErrorResponseException
 from loguru import logger
@@ -9,7 +9,7 @@ import os
 router = APIRouter()
 services = UserAccountService(get_engine())
 
-@router.post("/users", 
+@router.post("/users/temp", 
     response_model = UserCreationResponse,
     status_code = status.HTTP_201_CREATED,
     responses = {
@@ -47,6 +47,40 @@ async def create_user(user: UserAccountBase):
             )
         logger.error(f"Error inserting user: {e}")
         raise HTTPException(status_code=400, detail="Error inserting user")
+    
+
+@router.put("/users/{user_id}",
+    status_code = status.HTTP_204_NO_CONTENT,
+    responses = {
+        204: {"description": "User updated"},
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },)
+async def update_user(user_id: str, data: UserCompleteCreation):
+    try:
+        if not services.update_useraccount(user_id, data):
+            logger.error("User not found")
+            raise HTTPException(status_code=404, detail="User not found")
+        logger.info("User updated")
+        return
+
+    except HTTPException as e:
+        if e.status_code == 404:
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/404",
+                title="User not found",
+                status=404,
+                detail="User not found",
+                instance="/users/{user_id}"
+            )
+    except ValueError as e:
+        logger.error(f"Error updating user: {e}")
+        raise HTTPException(status_code=400, detail="Error updating user")
+    except Exception as e:
+        logger.error(f"Internal server error updating user: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
 
 @router.get("/users", 
     response_model = list[UserCreationResponse],
@@ -69,7 +103,7 @@ async def get_users():
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.get("/users/{user_id}",
-    response_model = UserCreationResponse,
+    response_model = UserInfoResponse,
     status_code = status.HTTP_200_OK,
     responses = {
         200: {"description": "User retrieved successfully"},
@@ -103,6 +137,7 @@ async def get_user(user_id: str):
 
 @router.get("/users/{username}/email",
     status_code = status.HTTP_200_OK,
+    response_model = UserEmailResponse,
     responses = {
         200: {"description": "Email retrieved successfully"},
         400: {"model": ErrorResponse},
@@ -135,36 +170,3 @@ async def get_email_by_username(username: str):
         logger.error(f"Internal server error retrieving email: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")   
 
-
-@router.patch("/users/{user_id}",
-    status_code = status.HTTP_204_NO_CONTENT,
-    responses = {
-        204: {"description": "User updated"},
-        400: {"model": ErrorResponse},
-        404: {"model": ErrorResponse},
-        500: {"model": ErrorResponse},
-    },)
-async def update_user(user_id: str, supabase_id: UserUpdateSupabaseID):
-    try:
-        if not services.update_useraccount(user_id, supabase_id):
-            logger.error("User not found")
-            raise HTTPException(status_code=404, detail="User not found")
-        logger.info("User updated")
-        return
-
-    except HTTPException as e:
-        if e.status_code == 404:
-            raise ErrorResponseException(
-                type="https://httpstatuses.com/404",
-                title="User not found",
-                status=404,
-                detail="User not found",
-                instance="/users/{user_id}",
-                errors={"user_id": "User not found"}
-            )
-    except ValueError as e:
-        logger.error(f"Error updating user: {e}")
-        raise HTTPException(status_code=400, detail="Error updating user")
-    except Exception as e:
-        logger.error(f"Internal server error updating user: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")

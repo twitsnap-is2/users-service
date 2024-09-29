@@ -3,7 +3,7 @@ from sqlalchemy.exc import NoResultFound, SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
 from business_logic.users.users_model import Users, UserInfo
-from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse
+from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation,UserInfoResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from business_logic.users.users_model import Base
@@ -42,14 +42,14 @@ class Database:
         local_timezone = timezone(timedelta(hours=-3))
         timestamp = datetime.now(local_timezone).isoformat()
         user_model_instance = Users(username=user.username, name=user.name, email=user.email, profilepic=None, createdat=timestamp)
-        userinfo_model_instance = UserInfo(birthdate=user.birthdate, location=user.location)
-        user_model_instance.userinfo = userinfo_model_instance
+        # userinfo_model_instance = UserInfo(birthdate=user.birthdate, location=user.location)
+        # user_model_instance.userinfo = userinfo_model_instance
         with Session(self.engine) as session:
             try: 
                 session.add(user_model_instance)
                 session.commit()
                 logger.info("User inserted successfully")
-                new_user = UserCreationResponse(id=user_model_instance.id, username=user.username, email=user.email, name=user.name, birthdate=user.birthdate, created_at=timestamp)
+                new_user = UserCreationResponse(id=user_model_instance.id, username=user.username, email=user.email, name=user.name, created_at=timestamp)
             except IntegrityError as e:
                 logger.error(f"IntegrityError: {e}")
                 session.rollback()
@@ -68,14 +68,18 @@ class Database:
             try:
                 statement = select(Users).where(Users.id == UUID(user_id))
                 user = session.scalars(statement).one()
-                user_creation_response = UserCreationResponse(
+                user.userinfo
+                user_creation_response = UserInfoResponse(
                     id=user.id,
                     username=user.username,
                     name=user.name,
                     email=user.email,
-                    birthdate=user.userinfo.birthdate,
                     created_at=user.createdat.isoformat(),
-                    profilepic=user.profilepic
+                    profilepic=user.profilepic,
+                    birthdate=user.userinfo.birthdate,
+                    locationLat=user.userinfo.locationLat,
+                    locationLong=user.userinfo.locationLong,
+                    interests=user.userinfo.interests
                 )
                 logger.info("User retrieved successfully")  
                 return user_creation_response
@@ -123,7 +127,7 @@ class Database:
         logger.info(f"Users RETURNED: {users}")
         return users
 
-    def update_user_id(self, user_id: str, supabase_id: UserAccountBase):
+    def update_user_id(self, user_id: str, data: UserCompleteCreation):
         with Session(self.engine) as session:
             try:
                 statement = select(Users).where(Users.id == UUID(user_id))
@@ -131,9 +135,11 @@ class Database:
                 if not user:
                     logger.error("Invalid user id")
                     return None
-                user.supabase_id = supabase_id.supabase_id
+                user.id = data.supabase_id
+                user.userinfo = UserInfo(birthdate=data.birthdate, locationLat=data.locationLat, locationLong=data.locationLong)
                 session.commit()
                 logger.info("User updated successfully")
+                return user
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
                 session.rollback()

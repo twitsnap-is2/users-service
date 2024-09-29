@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging as logger
 from sqlalchemy.orm import Session
 from database.db import Database
-from business_logic.users.users_schemas import UserAccountBase
+from business_logic.users.users_schemas import UserAccountBase, UserCompleteCreation
 from uuid import uuid4
 
 class UserAccountService:
@@ -25,5 +25,5 @@ class UserAccountService:
     def get_email_by_username(self, username: str):
         return self.database.get_email_by_username(username)
 
-    def update_useraccount(self, user_id: str, supabase_id: UserAccountBase):
-        return self.database.update_user_id(user_id, supabase_id)
+    def update_useraccount(self, user_id: str, data: UserCompleteCreation):
+        return self.database.update_user_id(user_id, data)

@@ -6,8 +6,6 @@ class UserAccountBase(BaseModel):
     name: str
     email: str
     password: str
-    birthdate: str
-    location: str
 
 # Inherits from base but contains id, needed for response
 class UserAccount(UserAccountBase):
@@ -21,14 +19,24 @@ class UserCreationResponse(BaseModel):
     username: str
     name: str
     email: str
-    birthdate: str
     created_at: str
     profilepic: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
-class UserUpdateSupabaseID(BaseModel):
+class UserInfoResponse(UserCreationResponse):
+    birthdate: str
+    locationLat: float
+    locationLong: float
+    interests: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class UserCompleteCreation(BaseModel):
     supabase_id: str
+    birthdate: str
+    locationLat: float
+    locationLong: float
 
 class UserEmailResponse(BaseModel):
     email: str
