@@ -22,3 +22,6 @@ class UserAccountService:
     def get_useraccount(self, user_id: str):
         return self.database.get_user_by_id(user_id)
 
+    def get_email_by_username(self, username: str):
+        return self.database.get_email_by_username(username)
+

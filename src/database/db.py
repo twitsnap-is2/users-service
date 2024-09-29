@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, String
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.exc import NoResultFound, SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
 from business_logic.users.users_model import Users, UserInfo
@@ -83,6 +83,21 @@ class Database:
 
         return user_creation_response
 
+    def get_email_by_username(self, username: str):
+        with Session(self.engine) as session:
+            try:
+                statement = select(Users.email).where(Users.username == username)
+                email = session.scalars(statement).one_or_none()
+                if email:
+                    logger.info("Email retrieved successfully in database")
+                    return email
+                else: 
+                    logger.error("Email not found")
+                    return None
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemyError: {e}")
+
+
     def get_users(self):
         users = []
         with Session(self.engine) as session:
@@ -133,3 +148,5 @@ class Database:
                 logger.info("Tables dropped successfully.")
         except Exception as e:
             logger.error(f"Error dropping table: {e}")
+
+    
