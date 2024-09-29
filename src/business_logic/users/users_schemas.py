@@ -26,3 +26,9 @@ class UserCreationResponse(BaseModel):
     profilepic: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class UserUpdateSupabaseID(BaseModel):
+    supabase_id: str
+
+class UserEmailResponse(BaseModel):
+    email: str

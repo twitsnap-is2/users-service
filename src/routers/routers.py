@@ -114,7 +114,7 @@ async def get_email_by_username(username: str):
         email = services.get_email_by_username(username)
         if email:
             logger.info("Email retrieved successfully")
-            return {"email": email}
+            return UserEmailResponse(email=email)
         else:
             logger.error("User not found")
             raise HTTPException(status_code=404, detail="User not found")
@@ -134,3 +134,37 @@ async def get_email_by_username(username: str):
     except Exception as e:
         logger.error(f"Internal server error retrieving email: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")   
+
+
+@router.patch("/users/{user_id}",
+    status_code = status.HTTP_204_NO_CONTENT,
+    responses = {
+        204: {"description": "User updated"},
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },)
+async def update_user(user_id: str, supabase_id: UserUpdateSupabaseID):
+    try:
+        if not services.update_useraccount(user_id, supabase_id):
+            logger.error("User not found")
+            raise HTTPException(status_code=404, detail="User not found")
+        logger.info("User updated")
+        return
+
+    except HTTPException as e:
+        if e.status_code == 404:
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/404",
+                title="User not found",
+                status=404,
+                detail="User not found",
+                instance="/users/{user_id}",
+                errors={"user_id": "User not found"}
+            )
+    except ValueError as e:
+        logger.error(f"Error updating user: {e}")
+        raise HTTPException(status_code=400, detail="Error updating user")
+    except Exception as e:
+        logger.error(f"Internal server error updating user: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")

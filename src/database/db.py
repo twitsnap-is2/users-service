@@ -123,6 +123,22 @@ class Database:
         logger.info(f"Users RETURNED: {users}")
         return users
 
+    def update_user_id(self, user_id: str, supabase_id: UserAccountBase):
+        with Session(self.engine) as session:
+            try:
+                statement = select(Users).where(Users.id == UUID(user_id))
+                user = session.scalars(statement).one()
+                if not user:
+                    logger.error("Invalid user id")
+                    return None
+                user.supabase_id = supabase_id.supabase_id
+                session.commit()
+                logger.info("User updated successfully")
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemyError: {e}")
+                session.rollback()
+                raise e
+
     def clear_table(self):
 
         with Session(self.engine) as session:

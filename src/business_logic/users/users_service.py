@@ -25,3 +25,5 @@ class UserAccountService:
     def get_email_by_username(self, username: str):
         return self.database.get_email_by_username(username)
 
+    def update_useraccount(self, user_id: str, supabase_id: UserAccountBase):
+        return self.database.update_user_id(user_id, supabase_id)
