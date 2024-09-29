@@ -18,7 +18,7 @@ services:
     env_file:
       - .env.test
     ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"  # Puedes cambiar el puerto si es necesario
+      - 5432:5432  # Puedes cambiar el puerto si es necesario
     networks:
       - test_network
 

@@ -2,6 +2,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
+from typing import Optional, Dict
 
 class ErrorResponse(BaseModel):
     """
@@ -20,7 +21,7 @@ class ErrorResponse(BaseModel):
     status: int
     detail: str
     instance: str
-    errors: dict
+    errors: Optional[Dict] = None
 
 class ErrorResponseException(Exception):
     """
