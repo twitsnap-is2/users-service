@@ -41,7 +41,7 @@ class Database:
     def insert_user(self, user: UserAccountBase):
         local_timezone = timezone(timedelta(hours=-3))
         timestamp = datetime.now(local_timezone).isoformat()
-        user_model_instance = Users(username=user.username, name=user.name, email=user.email, profilepic=None, createdat=timestamp)
+        user_model_instance = Users(username=user.username, name=user.name, email=user.email, profilePic=None, createdat=timestamp)
         # userinfo_model_instance = UserInfo(birthdate=user.birthdate, location=user.location)
         # user_model_instance.userinfo = userinfo_model_instance
         with Session(self.engine) as session:
@@ -74,7 +74,7 @@ class Database:
                     name=user.name,
                     email=user.email,
                     created_at=user.createdat.isoformat(),
-                    profilepic=user.profilepic,
+                    profilePic=user.profilePic,
                     birthdate=user.userinfo.birthdate if user.userinfo else None,
                     locationLat=user.userinfo.locationLat  if user.userinfo else None,
                     locationLong=user.userinfo.locationLong  if user.userinfo else None,
@@ -100,6 +100,20 @@ class Database:
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
 
+    def check_email_exists(self, email: str):
+        with Session(self.engine) as session:
+            try:
+                statement = select(Users.email).where(Users.email == email)
+                email = session.scalars(statement).one_or_none()
+                if email:
+                    logger.info("Email retrieved successfully in database")
+                    return {"exists": True}
+                else: 
+                    logger.error("Email not found")
+                    return {"exists": False}
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemyError: {e}")
+
 
     def get_users(self):
         users = []
@@ -115,7 +129,7 @@ class Database:
                         name=user.name,
                         email=user.email,
                         created_at=user.createdat.isoformat(),
-                        profilepic=user.profilepic
+                        profilePic=user.profilePic
                     )
                     users.append(user_creation_response)
             except SQLAlchemyError as e:
@@ -134,6 +148,8 @@ class Database:
                     logger.error("Invalid user id")
                     return None
                 user.id = data.supabase_id
+                logger.info(f"User id: {user.id}, profilePic: {data.profilePic}")
+                user.profilePic = data.profilePic
                 user.userinfo = UserInfo(birthdate=data.birthdate, locationLat=data.locationLat, locationLong=data.locationLong)
                 session.commit()
                 logger.info("User updated successfully")

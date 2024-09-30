@@ -5,7 +5,6 @@ class UserAccountBase(BaseModel):
     username: str
     name: str
     email: str
-    password: str
 
 # Inherits from base but contains id, needed for response
 class UserAccount(UserAccountBase):
@@ -20,7 +19,7 @@ class UserCreationResponse(BaseModel):
     name: str
     email: str
     created_at: str
-    profilepic: str | None = None
+    profilePic: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -37,6 +36,10 @@ class UserCompleteCreation(BaseModel):
     birthdate: str
     locationLat: float
     locationLong: float
+    profilePic: str | None = None
 
 class UserEmailResponse(BaseModel):
     email: str
+
+class UserEmailExistsResponse(BaseModel):
+    exists: bool

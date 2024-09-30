@@ -24,6 +24,9 @@ class UserAccountService:
 
     def get_email_by_username(self, username: str):
         return self.database.get_email_by_username(username)
+    
+    def check_email_exists(self, email: str):
+        return self.database.check_email_exists(email)
 
     def update_useraccount(self, user_id: str, data: UserCompleteCreation):
         return self.database.update_user_id(user_id, data)
