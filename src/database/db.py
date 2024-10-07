@@ -165,17 +165,13 @@ class Database:
                 statement = select(Users).where(Users.id.in_(authors_id))
                 authors = session.scalars(statement).all()
                 for author in authors:
-                    author_info = UserInfoResponse(
+                    author_info = UserCreationResponse(
                         id=author.id,
                         username=author.username,
                         name=author.name,
                         email=author.email,
                         created_at=author.createdat.isoformat(),
                         profilePic=author.profilePic,
-                        birthdate=author.userinfo.birthdate if author.userinfo else None,
-                        locationLat=author.userinfo.locationLat  if author.userinfo else None,
-                        locationLong=author.userinfo.locationLong  if author.userinfo else None,
-                        interests=author.userinfo.interests if author.userinfo else None
                     )
                     authors_info.append(author_info)
                 logger.info("Authors info retrieved successfully")

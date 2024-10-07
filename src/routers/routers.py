@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Query
 from utils.engine import get_engine
 from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation, UserEmailResponse, UserInfoResponse, UserEmailExistsResponse
 from business_logic.users.users_service import UserAccountService
@@ -188,21 +188,21 @@ async def get_email_by_username(email: str):
         logger.error(f"Internal server error checking if email {email} exists: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")   
 
-@router.get("/users/{user_id}/authorsId/{authors_id}",
+@router.get("/users/{user_id}/authorsId/",
     status_code = status.HTTP_200_OK,
-    response_model = list[UserInfoResponse],
+    response_model = list[UserCreationResponse],
     responses = {
         200: {"description": "User retrieved successfully"},
         400: {"model": ErrorResponse},
         404: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def get_user_authors_info(user_id: str, authors_id: str):
+async def get_user_authors_info(user_id: str, authors_id: list[str] = Query(...)):
     try:
         users = services.get_user_authors_info(user_id, authors_id)
         if users:
             logger.info("Users retrieved successfully")
-            return user
+            return users
         else:
             logger.error("User not found")
             raise ErrorResponseException(
