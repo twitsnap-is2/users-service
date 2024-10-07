@@ -51,13 +51,13 @@ jobs:
           done
       - name: Run tests
         env:
-          PYTHONPATH: .
+          PYTHONPATH: ./src
           DATABASE_URL: postgresql://postgres:password_ps@localhost:5432/test_db
         run: |
           pytest
       - name: Report Coverage
         env:
-          PYTHONPATH: .
+          PYTHONPATH: ./src
         run: |
           pip install coverage
           coverage run -m pytest
