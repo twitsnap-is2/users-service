@@ -1,15 +1,14 @@
-
 services:
-
   tests:
     build:
       context: ./
-      dockerfile: Dockerfile 
+      dockerfile: Dockerfile
     env_file:
       - .env.test
     depends_on:
-      - test_db_container
-    command: ["pytest", "/app/tests"] 
+      test_db_container:
+        condition: service_healthy
+    command: ["pytest", "/app/tests"]
     networks:
       - test_network
 
@@ -18,9 +17,18 @@ services:
     env_file:
       - .env.test
     ports:
-      - 5432:5432  # Puedes cambiar el puerto si es necesario
+      - 5432:5432 # Puedes cambiar el puerto si es necesario
     networks:
       - test_network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h $${POSTGRES_HOST}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   test_network:
