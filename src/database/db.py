@@ -158,11 +158,11 @@ class Database:
                 logger.error(f"SQLAlchemyError: {e}")
                 session.rollback()
                 raise e
-    def get_user_authors_info(self, user_id: str, authors_id: list[str]):
+    def get_user_authors_info(self, user_id: str, authors: list[str]):
         authors_info = []
         with Session(self.engine) as session:
             try:
-                statement = select(Users).where(Users.id.in_(authors_id))
+                statement = select(Users).where(Users.username.in_(authors))
                 authors = session.scalars(statement).all()
                 for author in authors:
                     author_info = UserCreationResponse(
