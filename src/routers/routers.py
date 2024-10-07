@@ -188,3 +188,35 @@ async def get_email_by_username(email: str):
         logger.error(f"Internal server error checking if email {email} exists: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")   
 
+@router.get("/users/{user_id}/authorsId/{authors_id}",
+    status_code = status.HTTP_200_OK,
+    response_model = list[UserInfoResponse],
+    responses = {
+        200: {"description": "User retrieved successfully"},
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },)
+async def get_user_authors_info(user_id: str, authors_id: str):
+    try:
+        users = services.get_user_authors_info(user_id, authors_id)
+        if users:
+            logger.info("Users retrieved successfully")
+            return user
+        else:
+            logger.error("User not found")
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/404",
+                title="Users not found",
+                status=404,
+                detail="None of the users were found",
+                instance="/users/{user_id}/authors_id/{authors_id}"
+            )
+    except ErrorResponseException as e:
+        raise e
+    except ValueError as e:
+        logger.error(f"Error retrieving user: {e}")
+        raise HTTPException(status_code=400, detail="Error retrieving user")
+    except Exception as e:
+        logger.error(f"Internal server error retrieving user: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
