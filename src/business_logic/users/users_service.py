@@ -33,4 +33,7 @@ class UserAccountService:
 
     def update_useraccount(self, user_id: str, data: UserCompleteCreation):
         return self.database.update_user_id(user_id, data)
+
+    def get_usernames_starting_with(string: str):
+        return self.database.get_usernames_starting_with(string)
     

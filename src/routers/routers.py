@@ -90,9 +90,12 @@ async def update_user(user_id: str, data: UserCompleteCreation):
         400: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def get_users():
+async def get_users(filter: str | None = None):
     try:
-        users = services.get_useraccounts()
+        if filter:
+            users = services.get_usernames_starting_with(filter)
+        else:
+            users = services.get_useraccounts()
         logger.info("User list retrieved successfully")
         return users
     except ValueError as e:

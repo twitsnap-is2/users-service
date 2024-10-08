@@ -158,6 +158,7 @@ class Database:
                 logger.error(f"SQLAlchemyError: {e}")
                 session.rollback()
                 raise e
+
     def get_user_authors_info(self, user_id: str, authors: list[str]):
         authors_info = []
         with Session(self.engine) as session:
@@ -178,6 +179,27 @@ class Database:
                 return authors_info
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemy Error: {e}")
+
+    def get_usernames_starting_with(self, string: str):
+        users = []
+        with Session(self.engine) as session:
+            try:
+                statement = select(Users).where(Users.username.ilike(string))
+                user_objects = session.scalars(statement).all()
+                for user in user_objects:
+                    user_creation_response = UserCreationResponse(
+                        id=user.id,
+                        username=user.username,
+                        name=user.name,
+                        email=user.email,
+                        created_at=user.createdat.isoformat(),
+                        profilePic=user.profilePic
+                    )
+                    users.append(user_creation_response)
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemyError: {e}")
+            
+        return users
 
     def clear_table(self):
 
