@@ -2,13 +2,12 @@ services:
   tests:
     build:
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.tests
     env_file:
       - .env.test
     depends_on:
       test_db_container:
         condition: service_healthy
-    command: ["pytest", "/app/tests"]
     networks:
       - test_network
 
@@ -16,8 +15,10 @@ services:
     image: postgres:13
     env_file:
       - .env.test
+    environment:
+      - PGPORT=5455
     ports:
-      - 5432:5432 # Puedes cambiar el puerto si es necesario
+      - 5455:5455
     networks:
       - test_network
     healthcheck:
