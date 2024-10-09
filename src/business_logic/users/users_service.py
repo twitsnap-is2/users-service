@@ -21,7 +21,7 @@ class UserAccountService:
 
     def get_useraccount(self, user_id: str):
         return self.database.get_user_by_id(user_id)
-    
+
     def get_user_authors_info(self, user_id: str, authors: list[str]):
         return self.database.get_user_authors_info(user_id, authors)
 
@@ -37,3 +37,5 @@ class UserAccountService:
     def get_usernames_starting_with(string: str):
         return self.database.get_usernames_starting_with(string)
     
+    def search_users(self, username: str):
+        return self.database.search_users(username)

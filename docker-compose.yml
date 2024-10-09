@@ -8,6 +8,8 @@ services:
       - "${SERVICES_API_PORT}:9212"
     volumes:
       - ./src:/app/
+    environment:
+      - PYTHONPATH=/app
     restart: unless-stopped
     depends_on:
       db_container:

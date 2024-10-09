@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, MetaData, Table, Column, String
+from sqlalchemy import create_engine, MetaData, Table, Column, String, or_
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
@@ -164,8 +164,8 @@ class Database:
         with Session(self.engine) as session:
             try:
                 statement = select(Users).where(Users.username.in_(authors))
-                authors = session.scalars(statement).all()
-                for author in authors:
+                author_records = session.scalars(statement).all()
+                for author in author_records:
                     author_info = UserCreationResponse(
                         id=author.id,
                         username=author.username,
@@ -200,6 +200,33 @@ class Database:
                 logger.error(f"SQLAlchemyError: {e}")
             
         return users
+
+    def search_users(self, username: str):
+        users_info = []
+        with Session(self.engine) as session:
+            try:
+                statement = select(Users).where(
+                    or_(
+                        Users.username.ilike(f"%{username}%"),
+                        Users.name.ilike(f"%{username}%")
+                    )
+                )
+                users = session.scalars(statement).all()
+                for user in users:
+                    user_info = UserCreationResponse(
+                        id=user.id,
+                        username=user.username,
+                        name=user.name,
+                        email=user.email,
+                        created_at=user.createdat.isoformat(),
+                        profilePic=user.profilePic
+                    )
+                    users_info.append(user_info)
+                logger.info("Users retrieved successfully in database")
+                return users_info
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemyError: {e}")
+
 
     def clear_table(self):
 
