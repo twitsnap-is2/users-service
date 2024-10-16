@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, HTTPException, Query
 from utils.engine import get_engine
-from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation, UserEmailResponse, UserInfoResponse, UserEmailExistsResponse
+from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation, UserEmailResponse, UserInfoResponse, UserEmailExistsResponse, FollowResponse, FollowerAccountBase
 from business_logic.users.users_service import UserAccountService
 from middleware.error_middleware import ErrorResponse, ErrorResponseException
 from loguru import logger
@@ -47,7 +47,6 @@ async def create_user(user: UserAccountBase):
             )
         logger.error(f"Error inserting user: {e}")
         raise HTTPException(status_code=400, detail="Error inserting user")
-    
 
 @router.put("/users/{user_id}",
     status_code = status.HTTP_204_NO_CONTENT,
@@ -80,7 +79,6 @@ async def update_user(user_id: str, data: UserCompleteCreation):
     except Exception as e:
         logger.error(f"Internal server error updating user: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
-
 
 @router.get("/users", 
     response_model = list[UserCreationResponse],
@@ -254,4 +252,123 @@ async def search_users(username: str = Query(...)):
         raise HTTPException(status_code=400, detail="Error retrieving user")
     except Exception as e:
         logger.error(f"Internal server error retrieving user: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.post("/users/follow/{user_name}/", 
+    response_model=FollowResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        200: {"description": "Follow action successfully"},
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
+)
+async def follow_user(follower_data: FollowerAccountBase, user_name: str):
+    try: 
+        follow_action = services.follow_user(follower_user_name=follower_data.user_name, followed_user_name=user_name)
+        print(follow_action)
+        if follow_action:
+            logger.info("User followed successfully")
+            return follow_action
+        else:
+            logger.error("User not found or already following")
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/404",
+                title="User not found or you are already following",
+                status=404,
+                detail="User not found or already following",
+                instance="/users/{user_id}"
+            )
+    except ErrorResponseException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Internal server error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+@router.delete("/users/unfollow/{user_name}/", 
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        200: {"description": "Unfollow action successfully"},
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
+)
+async def unfollow_user(follower_data: FollowerAccountBase, user_name: str):
+    try: 
+        unfollow_action = services.unfollow_user(follower_user_name=follower_data.user_name, followed_user_name=user_name)
+        if unfollow_action:
+            logger.info("User unfollowed successfully")
+        else:
+            logger.error("User not found or not following")
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/404",
+                title="User not found or you are not following",
+                status=404,
+                detail="User not found or not following",
+                instance="/users/unfollow/{user_name}"
+            )
+    except ErrorResponseException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Internal server error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+        
+@router.get("/users/followers/{user_name}/", 
+    response_model=list[UserAccountBase],
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"description": "Followers from user"},
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
+)
+async def followers(user_name: str):
+    try: 
+        user_followers = services.followers(user_name)
+        if user_followers is None:
+            logger.error("User not found")
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/404",
+                title="User not found",
+                status=404,
+                detail="User not found",
+                instance="/users/{user_id}"
+            )
+        return user_followers
+    except ErrorResponseException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Internal server error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+@router.get("/users/following/{user_name}/", 
+    response_model=list[UserAccountBase],
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"description": "Following from user"},
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
+)
+async def followings(user_name: str):
+    try: 
+        user_followers = services.following(user_name)
+        if user_followers is None:
+            logger.error("User not found")
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/404",
+                title="User not found",
+                status=404,
+                detail="User not found",
+                instance="/users/{user_id}"
+            )
+        return user_followers
+    except ErrorResponseException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Internal server error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")

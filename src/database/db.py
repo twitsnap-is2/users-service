@@ -2,8 +2,8 @@ from sqlalchemy import create_engine, MetaData, Table, Column, String, or_
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
-from business_logic.users.users_model import Users, UserInfo
-from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation,UserInfoResponse
+from business_logic.users.users_model import Users, UserInfo, Followers
+from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation,UserInfoResponse, FollowResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from business_logic.users.users_model import Base
@@ -15,6 +15,7 @@ class Database:
         self.engine = engine
         self.users_table = Users.__table__
         self.userinfo_table = UserInfo.__table__
+        self.followers_table = Followers.__table__
         self.create_table()
 
     def create_table(self):
@@ -37,6 +38,11 @@ class Database:
                 logger.info("Table 'userinfo' exists")
             else:
                 logger.info("Table 'userinfo' does not exist")
+
+            if connection.dialect.has_table(connection, "followers"):
+                logger.info("Table 'followers' exists")
+            else:
+                logger.info("Table 'followers' does not exist")
 
     def insert_user(self, user: UserAccountBase):
         local_timezone = timezone(timedelta(hours=-3))
@@ -85,7 +91,6 @@ class Database:
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
 
-
     def get_email_by_username(self, username: str):
         with Session(self.engine) as session:
             try:
@@ -113,7 +118,6 @@ class Database:
                     return {"exists": False}
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
-
 
     def get_users(self):
         users = []
@@ -227,13 +231,13 @@ class Database:
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
 
-
     def clear_table(self):
 
         with Session(self.engine) as session:
             try:
                 session.execute(self.userinfo_table.delete())
                 session.execute(self.users_table.delete())
+                session.execute(self.followers_table.delete())
                 session.commit()
                 logger.info("Tables cleared successfully.")
             except Exception as e:
@@ -250,8 +254,97 @@ class Database:
             with self.engine.connect() as connection:
                 self.userinfo_table.drop(connection)
                 self.users_table.drop(connection)
+                self.followers_table.drop(connection)
                 logger.info("Tables dropped successfully.")
         except Exception as e:
             logger.error(f"Error dropping table: {e}")
 
+    def follow_user(self, follower_user_name: str, followed_user_name: str):
+        with Session(self.engine) as session:
+            try:
+                local_timezone = timezone(timedelta(hours=-3))
+                timestamp = datetime.now(local_timezone).isoformat()
+
+                # Get follower_id
+                follower_id = session.scalars(select(Users.id).where(Users.username == follower_user_name)).one()
+                # Get followed_id
+                followed_id = session.scalars(select(Users.id).where(Users.username == followed_user_name)).one()
+
+                # Create instance of Followers
+                follower_model_instance = Followers(follower_id=follower_id, followed_id=followed_id, followed_at=timestamp)
+                session.add(follower_model_instance)
+                session.commit()
+                logger.info(f"User {follower_id} is now following user {followed_id}")
+                return FollowResponse(follower_id=follower_id, followed_id=followed_id, followed_at=timestamp)
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemyError: {e}")
+
+    def unfollow_user(self, follower_user_name: str, followed_user_name: str):
+        with Session(self.engine) as session:
+            try:
+                # Get follower_id
+                follower_id = session.scalars(select(Users.id).where(Users.username == follower_user_name)).one()
+                
+                # Get followed_id
+                followed_id = session.scalars(select(Users.id).where(Users.username == followed_user_name)).one()
+
+                # Delete the follow relationship
+                follow_record = session.scalars(
+                    select(Followers).where(
+                        Followers.follower_id == follower_id,
+                        Followers.followed_id == followed_id
+                    )
+                ).one()
+                session.delete(follow_record)
+                session.commit()
+                logger.info(f"User {follower_id} start to unfollowing user {followed_id}")
+                # Capaz conviene crear un modelo de respuesta a parte para esto
+                return FollowResponse(follower_id=follower_id, followed_id=followed_id, followed_at="")
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemyError: {e}")
     
+    def followers(self, user_name:str):
+        followers = []
+        with Session(self.engine) as session:
+            try:
+                user_id = session.scalars(select(Users.id).where(Users.username == user_name)).one()
+                if user_id is None:
+                    logger.error("User not found")
+                    return None
+                statement = select(Followers).where(Followers.followed_id == user_id)
+                followers_records = session.scalars(statement).all()
+                for follower in followers_records:
+                    user_follower = session.scalars(select(Users).where(Users.id == follower.follower_id)).one()
+                    follower_info = UserAccountBase(
+                        email = user_follower.email,
+                        name = user_follower.name,
+                        username = user_follower.username  
+                    )
+                    followers.append(follower_info)
+                logger.info("Followers info retrieved successfully")
+                return followers
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemy Error: {e}")
+
+    def following(self, user_name:str):
+        followings = []
+        with Session(self.engine) as session:
+            try:
+                user_id = session.scalars(select(Users.id).where(Users.username == user_name)).one()
+                if user_id is None:
+                    logger.error("User not found")
+                    return None
+                statement = select(Followers).where(Followers.follower_id == user_id)
+                followings_records = session.scalars(statement).all()
+                for following in followings_records:
+                    user_following = session.scalars(select(Users).where(Users.id == following.followed_id)).one()
+                    following_info = UserAccountBase(
+                        email = user_following.email,
+                        name = user_following.name,
+                        username = user_following.username  
+                    )
+                    followings.append(following_info)
+                logger.info("Followers info retrieved successfully")
+                return followings
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemy Error: {e}")

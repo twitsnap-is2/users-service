@@ -28,6 +28,12 @@ class Users(Base):
 
     userinfo = relationship("UserInfo", back_populates="user", uselist=False)
 
+     # Representa a los usuarios que siguen al usuario
+    followers = relationship("Followers", foreign_keys="[Followers.followed_id]", back_populates="followed", cascade="all, delete-orphan")
+
+    # Representa a los usuarios que el usuario sigue
+    following = relationship("Followers", foreign_keys="[Followers.follower_id]", back_populates="follower", cascade="all, delete-orphan")
+
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, username={self.username!r}, email={self.email!r})"
 
@@ -42,4 +48,17 @@ class UserInfo(Base):
     user = relationship("Users", back_populates="userinfo", uselist=False)
 
     def __repr__(self) -> str:
-        return f"UserInfo(id={self.id!r}, user_id={self.user_id!r}, birthdate={self.birthdate!r}, locationLat={self.locationLat!r}, locationLong={self.locationLong!r}, interests={self.interests!r})"
+        return f"UserInfo(id={self.id!r}, user_id={self.user_id!r}, birthdate={self.birthdate!r}, locationLat={self.locationLat!r}, locationLong={self.locationLong!r}, interests={self.interests!r})" 
+
+class Followers(Base):
+    __tablename__ = "followers"
+    
+    follower_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True, nullable=False) # Usuario que sigue
+    followed_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True, nullable=False) # Usuario que es seguido
+    followed_at = Column(DateTime, default=datetime.datetime.now(tz=datetime.timezone.utc))
+
+    follower = relationship("Users", foreign_keys=[follower_id], back_populates="following")
+    followed = relationship("Users", foreign_keys=[followed_id], back_populates="followers")
+
+    def __repr__(self) -> str:
+        return f"Followers(follower_id={self.follower_id!r}, followed_id={self.followed_id!r}, followed_at={self.followed_at!r})"

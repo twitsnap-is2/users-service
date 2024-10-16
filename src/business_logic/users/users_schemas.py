@@ -43,3 +43,12 @@ class UserEmailResponse(BaseModel):
 
 class UserEmailExistsResponse(BaseModel):
     exists: bool
+
+class FollowResponse(BaseModel):
+    follower_id: UUID
+    followed_id: UUID
+    followed_at: str
+
+class FollowerAccountBase(BaseModel):
+    user_name: str
+    

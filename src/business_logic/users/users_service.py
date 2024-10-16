@@ -34,8 +34,21 @@ class UserAccountService:
     def update_useraccount(self, user_id: str, data: UserCompleteCreation):
         return self.database.update_user_id(user_id, data)
 
-    def get_usernames_starting_with(string: str):
+    def get_usernames_starting_with(self, string: str):
         return self.database.get_usernames_starting_with(string)
     
     def search_users(self, username: str):
         return self.database.search_users(username)
+    
+    def follow_user(self, follower_user_name: str, followed_user_name: str):
+        return self.database.follow_user(follower_user_name, followed_user_name)
+
+    def unfollow_user(self, follower_user_name: str, followed_user_name: str):
+        return self.database.unfollow_user(follower_user_name, followed_user_name)
+    
+    def followers(self, user_name: str):
+        return self.database.followers(user_name)
+
+    def following(self, user_name: str):
+        return self.database.following(user_name)
+
