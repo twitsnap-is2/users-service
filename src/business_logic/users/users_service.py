@@ -46,9 +46,9 @@ class UserAccountService:
     def unfollow_user(self, follower_user_name: str, followed_user_name: str):
         return self.database.unfollow_user(follower_user_name, followed_user_name)
     
-    def followers(self, user_name: str):
-        return self.database.followers(user_name)
+    def get_followers(self, user_name: str):
+        return self.database.get_followers(user_name)
 
-    def following(self, user_name: str):
-        return self.database.following(user_name)
+    def get_following(self, user_name: str):
+        return self.database.get_following(user_name)
 

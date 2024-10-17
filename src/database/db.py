@@ -303,7 +303,7 @@ class Database:
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
     
-    def followers(self, user_name:str):
+    def get_followers(self, user_name:str):
         followers = []
         with Session(self.engine) as session:
             try:
@@ -315,10 +315,13 @@ class Database:
                 followers_records = session.scalars(statement).all()
                 for follower in followers_records:
                     user_follower = session.scalars(select(Users).where(Users.id == follower.follower_id)).one()
-                    follower_info = UserAccountBase(
-                        email = user_follower.email,
+                    follower_info = UserCreationResponse(
+                        id = user_follower.id,
+                        username = user_follower.username,
                         name = user_follower.name,
-                        username = user_follower.username  
+                        email = user_follower.email,
+                        created_at=user_follower.createdat.isoformat(),
+                        profilePic=user_follower.profilePic
                     )
                     followers.append(follower_info)
                 logger.info("Followers info retrieved successfully")
@@ -326,7 +329,7 @@ class Database:
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemy Error: {e}")
 
-    def following(self, user_name:str):
+    def get_following(self, user_name:str):
         followings = []
         with Session(self.engine) as session:
             try:
@@ -338,10 +341,13 @@ class Database:
                 followings_records = session.scalars(statement).all()
                 for following in followings_records:
                     user_following = session.scalars(select(Users).where(Users.id == following.followed_id)).one()
-                    following_info = UserAccountBase(
-                        email = user_following.email,
+                    following_info = UserCreationResponse(
+                        id = user_following.id,
+                        username = user_following.username,
                         name = user_following.name,
-                        username = user_following.username  
+                        email = user_following.email,
+                        created_at=user_following.createdat.isoformat(),
+                        profilePic=user_following.profilePic
                     )
                     followings.append(following_info)
                 logger.info("Followers info retrieved successfully")

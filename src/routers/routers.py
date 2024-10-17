@@ -289,7 +289,7 @@ async def follow_user(follower_data: FollowerAccountBase, user_name: str):
 @router.delete("/users/unfollow/{user_name}/", 
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
-        200: {"description": "Unfollow action successfully"},
+        204: {"description": "Unfollow action successfully"},
         400: {"model": ErrorResponse},
         404: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
@@ -316,7 +316,7 @@ async def unfollow_user(follower_data: FollowerAccountBase, user_name: str):
         raise HTTPException(status_code=500, detail="Internal Server Error")
         
 @router.get("/users/followers/{user_name}/", 
-    response_model=list[UserAccountBase],
+    response_model=list[UserCreationResponse],
     status_code=status.HTTP_200_OK,
     responses={
         200: {"description": "Followers from user"},
@@ -325,9 +325,9 @@ async def unfollow_user(follower_data: FollowerAccountBase, user_name: str):
         500: {"model": ErrorResponse},
     },
 )
-async def followers(user_name: str):
+async def get_followers(user_name: str):
     try: 
-        user_followers = services.followers(user_name)
+        user_followers = services.get_followers(user_name)
         if user_followers is None:
             logger.error("User not found")
             raise ErrorResponseException(
@@ -345,7 +345,7 @@ async def followers(user_name: str):
         raise HTTPException(status_code=500, detail="Internal Server Error")
     
 @router.get("/users/following/{user_name}/", 
-    response_model=list[UserAccountBase],
+    response_model=list[UserCreationResponse],
     status_code=status.HTTP_200_OK,
     responses={
         200: {"description": "Following from user"},
@@ -354,9 +354,9 @@ async def followers(user_name: str):
         500: {"model": ErrorResponse},
     },
 )
-async def followings(user_name: str):
+async def get_following(user_name: str):
     try: 
-        user_followers = services.following(user_name)
+        user_followers = services.get_following(user_name)
         if user_followers is None:
             logger.error("User not found")
             raise ErrorResponseException(
