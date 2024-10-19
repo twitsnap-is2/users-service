@@ -190,7 +190,7 @@ async def get_email_by_username(email: str):
 
 @router.get("/users/{user_id}/authorsUsernames/",
     status_code = status.HTTP_200_OK,
-    response_model = list[UserCreationResponse],
+    response_model = list[UserInfoResponse],
     responses = {
         200: {"description": "User retrieved successfully"},
         400: {"model": ErrorResponse},
