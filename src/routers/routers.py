@@ -243,7 +243,7 @@ async def search_users(username: str = Query(...)):
                 title="Users not found",
                 status=404,
                 detail="None of the users were found",
-                instance="/users/{user_id}/authors_id/{authors_id}"
+                instance="/users/search/"
             )
     except ErrorResponseException as e:
         raise e
@@ -278,7 +278,7 @@ async def follow_user(follower_data: FollowerAccountBase, user_name: str):
                 title="User not found or you are already following",
                 status=404,
                 detail="User not found or already following",
-                instance="/users/{user_id}"
+                instance="/users/follow/{user_name}/"
             )
     except ErrorResponseException as e:
         raise e
@@ -335,7 +335,7 @@ async def get_followers(user_name: str):
                 title="User not found",
                 status=404,
                 detail="User not found",
-                instance="/users/{user_id}"
+                instance="/users/followers/{user_name}/"
             )
         return user_followers
     except ErrorResponseException as e:

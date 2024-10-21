@@ -5,7 +5,7 @@ from loguru import logger
 #from src.routers.routers import router
 from database.db import Database
 from utils.engine import get_engine
-from business_logic.users.users_schemas import UserAccountBase
+from business_logic.users.users_schemas import UserAccountBase, FollowerAccountBase, FollowResponse
 import os
 
 client = TestClient(app)
@@ -137,3 +137,252 @@ def test_get_user_not_found(setup):
     }
 
     assert response.json() == response_expected
+
+def test_get_email_existence(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    email = response_post.json()["email"]
+    response_get = client.get(f"/users/{email}/email/exists")
+    assert response_get.status_code == 200
+    response_data = response_get.json()
+    assert response_data["exists"] == True
+
+def test_get_email_existence_incorrect(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    email = "s@hotmail.com"
+    response_get = client.get(f"/users/{email}/email/exists")
+    assert response_get.status_code == 200
+    response_data = response_get.json()
+    assert response_data["exists"] == False
+
+def test_get_users_authors_info(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    response_post2 = client.post("/users/temp", json={"username":"sofisofia", "name":"Sofii", "email":"sofiia@gmail.com", "password": "hola12345"})
+    response_post3 = client.post("/users/temp", json={"username":"sofisofi1", "name":"Sofiia", "email":"sofiiaa@gmail.com", "password": "hola123456"})
+
+    user_id = response_post.json()["id"]
+    authors = [response_post2.json()["username"], response_post3.json()["username"]]
+
+    response_get = client.get(f"/users/{user_id}/authorsUsernames/", params={"authors": authors})
+    
+    assert response_get.status_code == 200
+    response_data = response_get.json()
+    assert response_data[0]["username"] == "sofisofia"
+    assert response_data[1]["username"] == "sofisofi1"
+
+def test_get_users_authors_info_not_found(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+
+    user_id = response_post.json()["id"]
+    authors = ["sofisofia"]
+
+    response_get = client.get(f"/users/{user_id}/authorsUsernames/", params={"authors": authors})
+    assert response_get.status_code == 404
+    response_expected = {
+        "type": "https://httpstatuses.com/404",
+        "title": "Users not found",
+        "status": 404,
+        "detail": "None of the users were found",
+        "instance": "/users/{user_id}/authors_id/{authors_id}",
+        "errors": None
+    }
+
+def test_get_authors_info_with_only_one_valid_author(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    response_post2 = client.post("/users/temp", json={"username":"sofisofia", "name":"Sofii", "email":"sofiia@gmail.com", "password": "hola12345"})
+
+    user_id = response_post.json()["id"]
+    authors = [response_post2.json()["username"], "sofisofi1"]
+
+    response_get = client.get(f"/users/{user_id}/authorsUsernames/", params={"authors": authors})
+
+    assert response_get.status_code == 200
+    response_data = response_get.json()
+    assert response_data[0]["username"] == "sofisofia"    
+
+def test_search_users(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    response_post2 = client.post("/users/temp", json={"username":"sofisofia", "name":"Sofii", "email":"sofiia@gmail.com", "password": "hola12345"})
+    response_post3 = client.post("/users/temp", json={"username":"sofisofi1", "name":"Sofiia", "email":"sofiiaa@gmail.com", "password": "hola123456"})
+
+    response_get = client.get("/users/search/", params={"username": "sofisofi"})
+    assert response_get.status_code == 200
+    response_data = response_get.json()
+    assert response_data[0]["username"] == "sofisofi"
+
+def test_search_users_not_found(setup):
+    response_get = client.get("/users/search/", params={"username": "sofisofi"})
+    print(f"RESPONSE: {response_get.json()}")
+    assert response_get.status_code == 404
+    response_expected = {
+        "type": "https://httpstatuses.com/404",
+        "title": "Users not found",
+        "status": 404,
+        "detail": "None of the users were found",
+        "instance": "/users/search/",
+        "errors": None
+    }
+
+    assert response_get.json() == response_expected
+
+def test_search_user_with_starting_name(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    response_post2 = client.post("/users/temp", json={"username":"sofisofia", "name":"Sofii", "email":"sofiia@gmail.com", "password": "hola12345"})
+    response_post3 = client.post("/users/temp", json={"username":"sofisofi1", "name":"Sofiia", "email":"sofiiaa@gmail.com", "password": "hola123456"})
+
+    response_get = client.get("/users/search/", params={"username": "sofisof"})
+    
+    assert response_get.status_code == 200
+    response_data = response_get.json()
+    assert response_data[0]["username"] == "sofisofi"
+    assert response_data[1]["username"] == "sofisofia"
+    assert response_data[2]["username"] == "sofisofi1"
+
+def test_follow_user(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    response_post2 = client.post("/users/temp", json={"username":"sofisofia", "name":"Sofii", "email":"sofiia@gmail.com", "password": "hola12345"})
+    
+    user_id = response_post.json()["id"]
+    followed_user_name = response_post2.json()["username"]
+    followed_user_id = response_post2.json()["id"]
+    follower_data = FollowerAccountBase(user_name="sofisofi")
+
+    response_post = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.dict())
+    assert response_post.status_code == 201
+    response_data = response_post.json()
+    assert response_data["follower_id"] == user_id
+    assert response_data["followed_id"] == followed_user_id
+
+def test_follow_user_already_followed(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    response_post2 = client.post("/users/temp", json={"username":"sofisofia", "name":"Sofii", "email":"sofiia@gmail.com", "password": "hola12345"})
+    
+    user_id = response_post.json()["id"]
+    followed_user_name = response_post2.json()["username"]
+    followed_user_id = response_post2.json()["id"]
+    followed_username = response_post2.json()["username"]
+    follower_data = FollowerAccountBase(user_name="sofisofi")
+
+    response = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.dict())
+    assert response.status_code == 201
+    response2 = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.dict())
+    assert response2.status_code == 404
+    response_expected = {
+        "type": "https://httpstatuses.com/404",
+        "title": "User not found or you are already following",
+        "status": 404,
+        "detail": "User not found or already following",
+        "instance": f"/users/follow/{followed_username}/",
+        "errors": None
+    }
+    assert response2.json() == response_expected
+
+def test_unfollow_user(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    response_post2 = client.post("/users/temp", json={"username":"sofisofia", "name":"Sofii", "email":"sofiia@gmail.com", "password": "hola12345"})
+    
+    user_id = response_post.json()["id"]
+    followed_user_name = response_post2.json()["username"]
+    followed_user_id = response_post2.json()["id"]
+    follower_data = FollowerAccountBase(user_name="sofisofi")
+
+    response = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.dict())
+    assert response.status_code == 201
+
+    response2 = client.request(
+            method="DELETE",
+            url=f"/users/unfollow/{followed_user_name}/",
+            json=follower_data.dict()  
+        )
+
+    assert response2.status_code == 204
+
+def test_unfollow_user_not_followed(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    response_post2 = client.post("/users/temp", json={"username":"sofisofia", "name":"Sofii", "email":"sofiia@gmail.com", "password": "hola12345"})
+    
+    user_id = response_post.json()["id"]
+    followed_user_name = response_post2.json()["username"]
+    followed_user_id = response_post2.json()["id"]
+    follower_data = FollowerAccountBase(user_name="sofisofi")
+
+    response2 = client.request(
+            method="DELETE",
+            url=f"/users/unfollow/{followed_user_name}/",
+            json=follower_data.dict() 
+        )
+
+    assert response2.status_code == 404
+    
+    response_expected = {
+        "type": "https://httpstatuses.com/404",
+        "title": "User not found or you are not following",
+        "status": 404,
+        "detail": "User not found or not following",
+        "instance": f"/users/unfollow/{followed_user_name}/",
+        "errors": None
+    }
+
+    assert response2.json() == response_expected
+
+def test_get_followers(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    response_post2 = client.post("/users/temp", json={"username":"sofisofia", "name":"Sofii", "email":"sofiia@gmail.com", "password": "hola12345"})
+
+    user_id = response_post.json()["id"]
+    followed_user_name = response_post2.json()["username"]
+    followed_user_id = response_post2.json()["id"]
+    follower_data = FollowerAccountBase(user_name="sofisofi")
+
+    response = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.dict())
+    assert response.status_code == 201
+
+    response_get = client.get(f"/users/followers/{followed_user_name}/")
+    assert response_get.status_code == 200
+    response_data = response_get.json()
+    assert response_data[0]["username"] == "sofisofi"
+
+def test_get_followers_not_found(setup):
+
+    response_get = client.get("/users/followers/sofisofi/")
+    assert response_get.status_code == 404
+    response_expected = {
+        "type": "https://httpstatuses.com/404",
+        "title": "User not found",
+        "status": 404,
+        "detail": "User not found",
+        "instance": "/users/followers/sofisofi/",
+        "errors": None
+    }
+
+    assert response_get.json() == response_expected
+
+def test_get_following(setup):
+    response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
+    response_post2 = client.post("/users/temp", json={"username":"sofisofia", "name":"Sofii", "email":"sofiia@gmail.com", "password": "hola12345"})
+    
+    user_id = response_post.json()["id"]
+    followed_user_name = response_post2.json()["username"]
+    followed_user_id = response_post2.json()["id"]
+    follower_data = FollowerAccountBase(user_name="sofisofi")
+
+    response = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.dict())
+
+    response_get = client.get(f"/users/following/{follower_data.user_name}/")
+    assert response_get.status_code == 200
+    response_data = response_get.json()
+    assert response_data[0]["username"] == "sofisofia"
+
+def test_get_following_not_found(setup):
+    response_get = client.get("/users/following/sofisofi/")
+    assert response_get.status_code == 404
+    response_expected = {
+        "type": "https://httpstatuses.com/404",
+        "title": "User not found",
+        "status": 404,
+        "detail": "User not found",
+        "instance": "/users/following/sofisofi/",
+        "errors": None
+    }
+
+    assert response_get.json() == response_expected
+

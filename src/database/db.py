@@ -236,6 +236,7 @@ class Database:
 
         with Session(self.engine) as session:
             try:
+                session.execute(self.followers_table.delete())
                 session.execute(self.userinfo_table.delete())
                 session.execute(self.users_table.delete())
                 session.execute(self.followers_table.delete())
@@ -253,6 +254,7 @@ class Database:
         """
         try:
             with self.engine.connect() as connection:
+                self.followers_table.drop(connection)
                 self.userinfo_table.drop(connection)
                 self.users_table.drop(connection)
                 self.followers_table.drop(connection)
