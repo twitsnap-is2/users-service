@@ -4,8 +4,9 @@
 
 1. [Introduction](#introduction)
 2. [Run the Project](#run-the-project)
-3. [Technologies](#technologies)
-4. [Testing](#testing)
+3. [OpenAPI documentation](#open-api-doc)
+4. [Technologies](#technologies)
+5. [Testing](#testing)
 
 ## Introduction
 
@@ -47,9 +48,15 @@ To run the project using **Docker** follow this steps:
 
 The User Service is fully documented using the OpenAPI standard. You can explore the API's functionality and available endpoints via Swagger UI at the following URL:
 
+### Development
+
 `http://localhost:<port>/docs`
 
 _Make sure to replace `<port>` with the port number specified in your .env configuration file._
+
+### Production
+
+`https://twitsnap-users-service.up.railway.app/docs`
 
 ## Technologies
 
