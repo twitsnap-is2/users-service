@@ -1,4 +1,5 @@
 # Twitsnap's User Service
+![workflow](https://github.com/twitsnap-is2/users-service/actions/workflows/test.yml/badge.svg)
 
 ## Table of Content
 
@@ -86,6 +87,3 @@ There are some requirements that are being used for making the tests:
   ```
   docker-compose -f docker-compose-tests.yml up --build
    ```
-
-## Workflow status badge
-![workflow](https://github.com/twitsnap-is2/users-service/actions/workflows/test.yml/badge.svg)
