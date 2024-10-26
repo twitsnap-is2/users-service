@@ -52,3 +52,8 @@ class FollowResponse(BaseModel):
 class FollowerAccountBase(BaseModel):
     user_name: str
     
+class UserEditProfile(BaseModel):
+    name: str | None = None
+    birthdate: str | None = None
+    Interests: str | None = None
+    profilePic: str | None = None

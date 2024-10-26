@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 import logging as logger
 from sqlalchemy.orm import Session
 from database.db import Database
-from business_logic.users.users_schemas import UserAccountBase, UserCompleteCreation
+from business_logic.users.users_schemas import UserAccountBase, UserCompleteCreation, UserEditProfile
 from uuid import uuid4
 
 class UserAccountService:
@@ -51,4 +51,7 @@ class UserAccountService:
 
     def get_following(self, user_name: str):
         return self.database.get_following(user_name)
+    
+    def update_user_profile(self, user_id: str, data: UserEditProfile):
+        return self.database.update_user_profile(user_id, data)
 

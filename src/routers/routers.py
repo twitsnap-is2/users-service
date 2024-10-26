@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, HTTPException, Query
 from utils.engine import get_engine
-from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation, UserEmailResponse, UserInfoResponse, UserEmailExistsResponse, FollowResponse, FollowerAccountBase
+from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation, UserEmailResponse, UserInfoResponse, UserEmailExistsResponse, FollowResponse, FollowerAccountBase, UserEditProfile
 from business_logic.users.users_service import UserAccountService
 from middleware.error_middleware import ErrorResponse, ErrorResponseException
 from loguru import logger
@@ -371,4 +371,36 @@ async def get_following(user_name: str):
         raise e
     except Exception as e:
         logger.error(f"Internal server error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.put("/users/edit/{user_id}",
+    status_code = status.HTTP_204_NO_CONTENT,
+    responses = {
+        204: {"description": "User updated"},
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
+)
+async def edit_user_profile(user_id: str, data: UserEditProfile):
+    try:
+        if not services.update_user_profile(user_id, data):
+            logger.error("User not found")
+            raise HTTPException(status_code=404, detail="User not found")
+        logger.info("User updated")
+        return
+    except HTTPException as e:
+        if e.status_code == 404:
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/404",
+                title="User not found",
+                status=404,
+                detail="User not found",
+                instance="/users/{user_id}"
+            )
+    except ValueError as e:
+        logger.error(f"Error updating user: {e}")
+        raise HTTPException(status_code=400, detail="Error updating user")
+    except Exception as e:
+        logger.error(f"Internal server error updating user: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")

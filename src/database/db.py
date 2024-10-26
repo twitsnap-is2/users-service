@@ -3,7 +3,7 @@ from sqlalchemy.exc import NoResultFound, SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
 from business_logic.users.users_model import Users, UserInfo, Followers
-from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation,UserInfoResponse, FollowResponse
+from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation,UserInfoResponse, FollowResponse, UserEditProfile
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from business_logic.users.users_model import Base
@@ -357,3 +357,28 @@ class Database:
                 return followings
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemy Error: {e}")
+
+    def update_user_profile(self, user_id: str, data: UserEditProfile):
+        with Session(self.engine) as session:
+            try:
+                statement = select(Users).where(Users.id == UUID(user_id))
+                user = session.scalars(statement).one()
+                if not user:
+                    logger.error("Invalid user id")
+                    return None
+                if data.name:
+                    user.name = data.name
+                if data.birthdate:
+                    user.userinfo.birthdate = data.birthdate
+                if data.Interests:
+                    user.userinfo.interests = data.Interests
+                if data.profilePic:
+                    user.profilePic = data.profilePic
+                
+                session.commit()
+                logger.info("User updated successfully")
+                return user
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemyError: {e}")
+                session.rollback()
+                raise e
