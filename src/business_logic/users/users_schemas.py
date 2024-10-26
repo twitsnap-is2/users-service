@@ -55,5 +55,5 @@ class FollowerAccountBase(BaseModel):
 class UserEditProfile(BaseModel):
     name: str | None = None
     birthdate: str | None = None
-    Interests: str | None = None
+    interests: str | None = None
     profilePic: str | None = None
