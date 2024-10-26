@@ -180,7 +180,7 @@ async def get_email_by_username(username: str):
         404: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def get_email_by_username(email: str):
+async def check_email_exists(email: str):
     try:
         res = services.check_email_exists(email)
         return UserEmailExistsResponse(exists=res["exists"])
@@ -254,7 +254,7 @@ async def search_users(username: str = Query(...)):
         logger.error(f"Internal server error retrieving user: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-@router.post("/users/follow/{user_name}/", 
+@router.post("/users/follow/{user_id}/", 
     response_model=FollowResponse,
     status_code=status.HTTP_201_CREATED,
     responses={
@@ -264,9 +264,9 @@ async def search_users(username: str = Query(...)):
         500: {"model": ErrorResponse},
     },
 )
-async def follow_user(follower_data: FollowerAccountBase, user_name: str):
+async def follow_user(follower_data: FollowerAccountBase, user_id: str):
     try: 
-        follow_action = services.follow_user(follower_user_name=follower_data.user_name, followed_user_name=user_name)
+        follow_action = services.follow_user(follower_user_id=follower_data.user_id, followed_user_id=user_id)
         print(follow_action)
         if follow_action:
             logger.info("User followed successfully")
@@ -278,7 +278,7 @@ async def follow_user(follower_data: FollowerAccountBase, user_name: str):
                 title="User not found or you are already following",
                 status=404,
                 detail="User not found or already following",
-                instance="/users/follow/{user_name}/"
+                instance="/users/follow/{user_id}/"
             )
     except ErrorResponseException as e:
         raise e
@@ -286,7 +286,7 @@ async def follow_user(follower_data: FollowerAccountBase, user_name: str):
         logger.error(f"Internal server error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
     
-@router.delete("/users/unfollow/{user_name}/", 
+@router.delete("/users/unfollow/{user_id}/", 
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
         204: {"description": "Unfollow action successfully"},
@@ -295,9 +295,9 @@ async def follow_user(follower_data: FollowerAccountBase, user_name: str):
         500: {"model": ErrorResponse},
     },
 )
-async def unfollow_user(follower_data: FollowerAccountBase, user_name: str):
+async def unfollow_user(follower_data: FollowerAccountBase, user_id: str):
     try: 
-        unfollow_action = services.unfollow_user(follower_user_name=follower_data.user_name, followed_user_name=user_name)
+        unfollow_action = services.unfollow_user(follower_user_id=follower_data.user_id, followed_user_id=user_id)
         if unfollow_action:
             logger.info("User unfollowed successfully")
         else:
@@ -307,7 +307,7 @@ async def unfollow_user(follower_data: FollowerAccountBase, user_name: str):
                 title="User not found or you are not following",
                 status=404,
                 detail="User not found or not following",
-                instance="/users/unfollow/{user_name}"
+                instance="/users/unfollow/{user_id}"
             )
     except ErrorResponseException as e:
         raise e
@@ -315,7 +315,7 @@ async def unfollow_user(follower_data: FollowerAccountBase, user_name: str):
         logger.error(f"Internal server error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
         
-@router.get("/users/followers/{user_name}/", 
+@router.get("/users/followers/{user_id}/", 
     response_model=list[UserCreationResponse],
     status_code=status.HTTP_200_OK,
     responses={
@@ -325,9 +325,9 @@ async def unfollow_user(follower_data: FollowerAccountBase, user_name: str):
         500: {"model": ErrorResponse},
     },
 )
-async def get_followers(user_name: str):
+async def get_followers(user_id: str):
     try: 
-        user_followers = services.get_followers(user_name)
+        user_followers = services.get_followers(user_id)
         if user_followers is None:
             logger.error("User not found")
             raise ErrorResponseException(
@@ -335,7 +335,7 @@ async def get_followers(user_name: str):
                 title="User not found",
                 status=404,
                 detail="User not found",
-                instance="/users/followers/{user_name}/"
+                instance="/users/followers/{user_id}/"
             )
         return user_followers
     except ErrorResponseException as e:
@@ -344,7 +344,7 @@ async def get_followers(user_name: str):
         logger.error(f"Internal server error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
     
-@router.get("/users/following/{user_name}/", 
+@router.get("/users/following/{user_id}/", 
     response_model=list[UserCreationResponse],
     status_code=status.HTTP_200_OK,
     responses={
@@ -354,9 +354,9 @@ async def get_followers(user_name: str):
         500: {"model": ErrorResponse},
     },
 )
-async def get_following(user_name: str):
+async def get_following(user_id: str):
     try: 
-        user_followers = services.get_following(user_name)
+        user_followers = services.get_following(user_id)
         if user_followers is None:
             logger.error("User not found")
             raise ErrorResponseException(

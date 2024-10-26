@@ -40,17 +40,17 @@ class UserAccountService:
     def search_users(self, username: str):
         return self.database.search_users(username)
     
-    def follow_user(self, follower_user_name: str, followed_user_name: str):
-        return self.database.follow_user(follower_user_name, followed_user_name)
+    def follow_user(self, follower_user_id: str, followed_user_id: str):
+        return self.database.follow_user(follower_user_id, followed_user_id)
 
-    def unfollow_user(self, follower_user_name: str, followed_user_name: str):
-        return self.database.unfollow_user(follower_user_name, followed_user_name)
+    def unfollow_user(self, follower_user_id: str, followed_user_id: str):
+        return self.database.unfollow_user(follower_user_id, followed_user_id)
     
-    def get_followers(self, user_name: str):
-        return self.database.get_followers(user_name)
+    def get_followers(self, user_id: str):
+        return self.database.get_followers(user_id)
 
-    def get_following(self, user_name: str):
-        return self.database.get_following(user_name)
+    def get_following(self, user_id: str):
+        return self.database.get_following(user_id)
     
     def update_user_profile(self, user_id: str, data: UserEditProfile):
         return self.database.update_user_profile(user_id, data)

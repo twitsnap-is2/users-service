@@ -50,7 +50,7 @@ class FollowResponse(BaseModel):
     followed_at: str
 
 class FollowerAccountBase(BaseModel):
-    user_name: str
+    user_id: str
     
 class UserEditProfile(BaseModel):
     name: str | None = None

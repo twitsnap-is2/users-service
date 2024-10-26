@@ -262,55 +262,43 @@ class Database:
         except Exception as e:
             logger.error(f"Error dropping table: {e}")
 
-    def follow_user(self, follower_user_name: str, followed_user_name: str):
+    def follow_user(self, follower_user_id: str, followed_user_id: str):
         with Session(self.engine) as session:
             try:
                 local_timezone = timezone(timedelta(hours=-3))
                 timestamp = datetime.now(local_timezone).isoformat()
 
-                # Get follower_id
-                follower_id = session.scalars(select(Users.id).where(Users.username == follower_user_name)).one()
-                # Get followed_id
-                followed_id = session.scalars(select(Users.id).where(Users.username == followed_user_name)).one()
-
                 # Create instance of Followers
-                follower_model_instance = Followers(follower_id=follower_id, followed_id=followed_id, followed_at=timestamp)
+                follower_model_instance = Followers(follower_id=follower_user_id, followed_id=followed_user_id, followed_at=timestamp)
                 session.add(follower_model_instance)
                 session.commit()
-                logger.info(f"User {follower_id} is now following user {followed_id}")
-                return FollowResponse(follower_id=follower_id, followed_id=followed_id, followed_at=timestamp)
+                logger.info(f"User {follower_user_id} is now following user {followed_user_id}")
+                return FollowResponse(follower_id=follower_user_id, followed_id=followed_user_id, followed_at=timestamp)
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
 
-    def unfollow_user(self, follower_user_name: str, followed_user_name: str):
+    def unfollow_user(self, follower_user_id: str, followed_user_id: str):
         with Session(self.engine) as session:
             try:
-                # Get follower_id
-                follower_id = session.scalars(select(Users.id).where(Users.username == follower_user_name)).one()
-                
-                # Get followed_id
-                followed_id = session.scalars(select(Users.id).where(Users.username == followed_user_name)).one()
-
                 # Delete the follow relationship
                 follow_record = session.scalars(
                     select(Followers).where(
-                        Followers.follower_id == follower_id,
-                        Followers.followed_id == followed_id
+                        Followers.follower_id == follower_user_id,
+                        Followers.followed_id == followed_user_id
                     )
                 ).one()
                 session.delete(follow_record)
                 session.commit()
-                logger.info(f"User {follower_id} start to unfollowing user {followed_id}")
+                logger.info(f"User {follower_user_id} start to unfollowing user {followed_user_id}")
                 # Capaz conviene crear un modelo de respuesta a parte para esto
-                return FollowResponse(follower_id=follower_id, followed_id=followed_id, followed_at="")
+                return FollowResponse(follower_id=follower_user_id, followed_id=followed_user_id, followed_at="")
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
     
-    def get_followers(self, user_name:str):
+    def get_followers(self, user_id:str):
         followers = []
         with Session(self.engine) as session:
             try:
-                user_id = session.scalars(select(Users.id).where(Users.username == user_name)).one()
                 if user_id is None:
                     logger.error("User not found")
                     return None
@@ -332,11 +320,10 @@ class Database:
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemy Error: {e}")
 
-    def get_following(self, user_name:str):
+    def get_following(self, user_id:str):
         followings = []
         with Session(self.engine) as session:
             try:
-                user_id = session.scalars(select(Users.id).where(Users.username == user_name)).one()
                 if user_id is None:
                     logger.error("User not found")
                     return None
@@ -370,7 +357,7 @@ class Database:
                     user.name = data.name
                 if data.birthdate:
                     user.userinfo.birthdate = data.birthdate
-                if data.interests:
+                if data.Interests:
                     user.userinfo.interests = data.interests
                 if data.profilePic:
                     user.profilePic = data.profilePic
