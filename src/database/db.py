@@ -357,7 +357,7 @@ class Database:
                     user.name = data.name
                 if data.birthdate:
                     user.userinfo.birthdate = data.birthdate
-                if data.Interests:
+                if data.interests:
                     user.userinfo.interests = data.interests
                 if data.profilePic:
                     user.profilePic = data.profilePic
