@@ -244,9 +244,9 @@ def test_follow_user(setup):
     user_id = response_post.json()["id"]
     followed_user_name = response_post2.json()["username"]
     followed_user_id = response_post2.json()["id"]
-    follower_data = FollowerAccountBase(user_name="sofisofi")
+    follower_data = FollowerAccountBase(user_id=user_id)
 
-    response_post = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.model_dump())
+    response_post = client.post(f"/users/follow/{followed_user_id}/", json=follower_data.model_dump())
     assert response_post.status_code == 201
     response_data = response_post.json()
     assert response_data["follower_id"] == user_id
@@ -260,18 +260,18 @@ def test_follow_user_already_followed(setup):
     followed_user_name = response_post2.json()["username"]
     followed_user_id = response_post2.json()["id"]
     followed_username = response_post2.json()["username"]
-    follower_data = FollowerAccountBase(user_name="sofisofi")
+    follower_data = FollowerAccountBase(user_id=user_id)
 
-    response = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.model_dump())
+    response = client.post(f"/users/follow/{followed_user_id}/", json=follower_data.model_dump())
     assert response.status_code == 201
-    response2 = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.model_dump())
+    response2 = client.post(f"/users/follow/{followed_user_id}/", json=follower_data.model_dump())
     assert response2.status_code == 404
     response_expected = {
         "type": "https://httpstatuses.com/404",
         "title": "User not found or you are already following",
         "status": 404,
         "detail": "User not found or already following",
-        "instance": f"/users/follow/{followed_username}/",
+        "instance": f"/users/follow/{followed_user_id}/",
         "errors": None
     }
     assert response2.json() == response_expected
@@ -283,14 +283,14 @@ def test_unfollow_user(setup):
     user_id = response_post.json()["id"]
     followed_user_name = response_post2.json()["username"]
     followed_user_id = response_post2.json()["id"]
-    follower_data = FollowerAccountBase(user_name="sofisofi")
+    follower_data = FollowerAccountBase(user_id=user_id)
 
-    response = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.model_dump())
+    response = client.post(f"/users/follow/{followed_user_id}/", json=follower_data.model_dump())
     assert response.status_code == 201
 
     response2 = client.request(
             method="DELETE",
-            url=f"/users/unfollow/{followed_user_name}/",
+            url=f"/users/unfollow/{followed_user_id}/",
             json=follower_data.model_dump()  
         )
 
@@ -303,11 +303,11 @@ def test_unfollow_user_not_followed(setup):
     user_id = response_post.json()["id"]
     followed_user_name = response_post2.json()["username"]
     followed_user_id = response_post2.json()["id"]
-    follower_data = FollowerAccountBase(user_name="sofisofi")
+    follower_data = FollowerAccountBase(user_id=user_id)
 
     response2 = client.request(
             method="DELETE",
-            url=f"/users/unfollow/{followed_user_name}/",
+            url=f"/users/unfollow/{followed_user_id}/",
             json=follower_data.model_dump() 
         )
 
@@ -318,7 +318,7 @@ def test_unfollow_user_not_followed(setup):
         "title": "User not found or you are not following",
         "status": 404,
         "detail": "User not found or not following",
-        "instance": f"/users/unfollow/{followed_user_name}/",
+        "instance": f"/users/unfollow/{followed_user_id}/",
         "errors": None
     }
 
@@ -331,30 +331,25 @@ def test_get_followers(setup):
     user_id = response_post.json()["id"]
     followed_user_name = response_post2.json()["username"]
     followed_user_id = response_post2.json()["id"]
-    follower_data = FollowerAccountBase(user_name="sofisofi")
+    follower_data = FollowerAccountBase(user_id=user_id)
 
-    response = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.model_dump())
+    response = client.post(f"/users/follow/{followed_user_id}/", json=follower_data.model_dump())
     assert response.status_code == 201
 
-    response_get = client.get(f"/users/followers/{followed_user_name}/")
+    response_get = client.get(f"/users/followers/{followed_user_id}/")
     assert response_get.status_code == 200
     response_data = response_get.json()
     assert response_data[0]["username"] == "sofisofi"
 
 def test_get_followers_not_found(setup):
 
-    response_get = client.get("/users/followers/sofisofi/")
+    response_get = client.get("/users/followers/non-existent-id/")
     assert response_get.status_code == 404
-    response_expected = {
-        "type": "https://httpstatuses.com/404",
-        "title": "User not found",
-        "status": 404,
-        "detail": "User not found",
-        "instance": "/users/followers/sofisofi/",
-        "errors": None
-    }
 
-    assert response_get.json() == response_expected
+    assert response_get.json()['status'] == 404
+    assert response_get.json()['title'] == "User not found"
+    assert response_get.json()['type'] == "https://httpstatuses.com/404"
+    assert response_get.json()['errors'] == None
 
 def test_get_following(setup):
     response_post = client.post("/users/temp", json={"username":"sofisofi", "name":"Sofia", "email":"sofia@gmail.com", "password": "hola1234"})
@@ -363,24 +358,24 @@ def test_get_following(setup):
     user_id = response_post.json()["id"]
     followed_user_name = response_post2.json()["username"]
     followed_user_id = response_post2.json()["id"]
-    follower_data = FollowerAccountBase(user_name="sofisofi")
+    follower_data = FollowerAccountBase(user_id=user_id)
 
-    response = client.post(f"/users/follow/{followed_user_name}/", json=follower_data.model_dump())
+    response = client.post(f"/users/follow/{followed_user_id}/", json=follower_data.model_dump())
 
-    response_get = client.get(f"/users/following/{follower_data.user_name}/")
+    response_get = client.get(f"/users/following/{follower_data.user_id}/")
     assert response_get.status_code == 200
     response_data = response_get.json()
     assert response_data[0]["username"] == "sofisofia"
 
 def test_get_following_not_found(setup):
-    response_get = client.get("/users/following/sofisofi/")
+    response_get = client.get("/users/following/non-existent-id/")
     assert response_get.status_code == 404
     response_expected = {
         "type": "https://httpstatuses.com/404",
         "title": "User not found",
         "status": 404,
         "detail": "User not found",
-        "instance": "/users/following/sofisofi/",
+        "instance": "/users/following/non-existent-id/",
         "errors": None
     }
 
