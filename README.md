@@ -13,6 +13,10 @@
 
 This repository contains the **User Service** for the Twitsnap application. This service is responsible for all the users data. All requests that interact and are related to users are in this service such as creation, modification or deletion as needed and many more.
 
+## Production swaggers
+
+`https://twitsnap-users-service.up.railway.app/docs`
+
 ## Run the Project
 
 To run the project using **Docker** follow this steps:
@@ -55,9 +59,6 @@ The User Service is fully documented using the OpenAPI standard. You can explore
 
 _Make sure to replace `<port>` with the port number specified in your .env configuration file._
 
-### Production
-
-`https://twitsnap-users-service.up.railway.app/docs`
 
 ## Technologies
 
