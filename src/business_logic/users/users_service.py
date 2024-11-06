@@ -24,6 +24,9 @@ class UserAccountService:
 
     def get_user_authors_info(self, user_id: str, authors: list[str]):
         return self.database.get_user_authors_info(user_id, authors)
+    
+    def get_user_authors_info_id(self, user_id: str, authors: list[str]):
+        return self.database.get_user_authors_info_id(user_id, authors)
 
     def get_email_by_username(self, username: str):
         return self.database.get_email_by_username(username)

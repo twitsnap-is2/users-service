@@ -220,6 +220,39 @@ async def get_user_authors_info(user_id: str, authors: list[str] = Query(...)):
     except Exception as e:
         logger.error(f"Internal server error retrieving user: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+@router.get("/users/{user_id}/authorsIds/",
+    status_code = status.HTTP_200_OK,
+    response_model = list[UserInfoResponse],
+    responses = {
+        200: {"description": "User retrieved successfully"},
+        400: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },)
+async def get_user_authors_info_id(user_id: str, authors: list[str] = Query(...)):
+    try:
+        users = services.get_user_authors_info_id(user_id, authors)
+        if users:
+            logger.info("Users retrieved successfully")
+            return users
+        else:
+            logger.error("User not found")
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/404",
+                title="Users not found",
+                status=404,
+                detail="None of the users were found",
+                instance="/users/{user_id}/authors_id/{authors_id}"
+            )
+    except ErrorResponseException as e:
+        raise e
+    except ValueError as e:
+        logger.error(f"Error retrieving user: {e}")
+        raise HTTPException(status_code=400, detail="Error retrieving user")
+    except Exception as e:
+        logger.error(f"Internal server error retrieving user: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @router.get("/users/search/", 
     response_model = list[UserCreationResponse],

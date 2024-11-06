@@ -185,6 +185,28 @@ class Database:
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemy Error: {e}")
 
+    def get_user_authors_info_id(self, user_id: str, authors: list[str]):
+        authors_info = []
+        with Session(self.engine) as session:
+            try:
+                statement = select(Users).where(Users.id.in_(authors))
+                author_records = session.scalars(statement).all()
+                for author in author_records:
+                    author_info = UserInfoResponse(
+                        id=author.id,
+                        username=author.username,
+                        name=author.name,
+                        email=author.email,
+                        created_at=author.createdat.isoformat(),
+                        profilePic=author.profilePic,
+                        interests=author.userinfo.interests if author.userinfo else None,
+                    )
+                    authors_info.append(author_info)
+                logger.info("Authors info retrieved successfully")
+                return authors_info
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemy Error: {e}")
+
     def get_usernames_starting_with(self, string: str):
         users = []
         with Session(self.engine) as session:
