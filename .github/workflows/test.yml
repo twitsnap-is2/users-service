@@ -63,7 +63,7 @@ jobs:
           coverage run -m pytest
           coverage report
           coverage xml
-      - name: Uploas coverage to Codecov
+      - name: Upload coverage to Codecov
         env: 
           CODECOV_TOKEN: ${{ secrets.GLOBAL_CODECOV_TOKEN}}
         run: |
