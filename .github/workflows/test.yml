@@ -54,7 +54,7 @@ jobs:
           PYTHONPATH: ./src
           DATABASE_URL: postgresql://postgres:password_ps@localhost:5432/test_db
         run: |
-          pytest
+          pytest --cov --cov-report=xml
       - name: Report Coverage
         env:
           PYTHONPATH: ./src
@@ -64,7 +64,7 @@ jobs:
           coverage report
           coverage xml
       - name: Upload coverage to Codecov
-        env: 
-          CODECOV_TOKEN: ${{ secrets.GLOBAL_CODECOV_TOKEN}}
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN}}
         run: |
           bash <(curl -s https://codecov.io/bash)
