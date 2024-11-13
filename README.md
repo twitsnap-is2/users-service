@@ -1,5 +1,5 @@
 # Twitsnap's User Service
-![workflow](https://github.com/twitsnap-is2/users-service/actions/workflows/test.yml/badge.svg)
+![workflow](https://github.com/twitsnap-is2/users-service/actions/workflows/test.yml/badge.svg) [![codecov](https://codecov.io/gh/twitsnap-is2/users-service/graph/badge.svg?token=AT0MZKUYPN)](https://codecov.io/gh/twitsnap-is2/users-service)
 
 ## Table of Content
 
