@@ -437,3 +437,45 @@ async def edit_user_profile(user_id: str, data: UserEditProfile):
     except Exception as e:
         logger.error(f"Internal server error updating user: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+@router.get("/users/near/{user_id}/", 
+    response_model = list[UserCreationResponse],
+    status_code = status.HTTP_200_OK,
+    responses = {
+        200: {"description": "User list retrieved successfully"},
+        400: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
+)
+async def get_near_users(user_id: str):
+    try:
+        users = services.get_near_users(user_id)
+        logger.info("User list retrieved successfully")
+        return users
+    except ValueError as e:
+        logger.error(f"Error retrieving users: {e}")
+        raise HTTPException(status_code=400, detail="Error retrieving users")
+    except Exception as e:
+        logger.error(f"Internal server error retrieving users: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+@router.get("/users/common-interests/{user_id}/", 
+    response_model = list[UserCreationResponse],
+    status_code = status.HTTP_200_OK,
+    responses = {
+        200: {"description": "User list retrieved successfully"},
+        400: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
+)
+async def get_users_with_common_interests(user_id: str):
+    try:
+        users = services.get_users_with_common_interests(user_id)
+        logger.info("User list retrieved successfully")
+        return users
+    except ValueError as e:
+        logger.error(f"Error retrieving users: {e}")
+        raise HTTPException(status_code=400, detail="Error retrieving users")
+    except Exception as e:
+        logger.error(f"Internal server error retrieving users: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")

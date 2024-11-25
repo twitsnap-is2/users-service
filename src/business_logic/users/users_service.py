@@ -57,4 +57,10 @@ class UserAccountService:
     
     def update_user_profile(self, user_id: str, data: UserEditProfile):
         return self.database.update_user_profile(user_id, data)
+    
+    def get_near_users(self, user_id:str):
+        return self.database.get_near_users(user_id)
+    
+    def get_users_with_common_interests(self, user_id:str):
+        return self.database.get_users_with_common_interests(user_id)
 

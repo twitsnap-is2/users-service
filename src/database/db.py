@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, MetaData, Table, Column, String, or_
+from sqlalchemy import create_engine, MetaData, Table, Column, String, or_, func
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
@@ -391,3 +391,72 @@ class Database:
                 logger.error(f"SQLAlchemyError: {e}")
                 session.rollback()
                 raise e
+            
+    def get_near_users(self, user_id: str):
+        my_user = self.get_user_by_id(user_id)
+        (latitude, longitude) = (my_user.locationLat, my_user.locationLong)
+        near_users = []
+        with Session(self.engine) as session:
+            try:
+                radius_km = 1
+                earth_radius_km = 6371.0
+                statement = select(Users).join(UserInfo).where(
+                    func.acos(
+                        func.sin(func.radians(UserInfo.locationLat)) * func.sin(func.radians(latitude)) +
+                        func.cos(func.radians(UserInfo.locationLat)) * func.cos(func.radians(latitude)) *
+                        func.cos(func.radians(UserInfo.locationLong) - func.radians(longitude))
+                    ) * earth_radius_km <= radius_km
+                )
+                user_objects = session.scalars(statement).all()
+                for user in user_objects:
+                    user_info = UserCreationResponse(
+                        id=user.id,
+                        username=user.username,
+                        name=user.name,
+                        email=user.email,
+                        created_at=user.createdat.isoformat(),
+                        profilePic=user.profilePic
+                    )
+                    near_users.append(user_info)
+                logger.info("Near users retrieved successfully")
+                return near_users
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemyError: {e}")
+                return []
+            
+    def get_users_with_common_interests(self, user_id: str):
+        with Session(self.engine) as session:
+            try:
+                user = session.scalars(select(Users).join(UserInfo).where(Users.id == user_id)).one()
+                if not user:
+                    logger.error("User not found")
+                    return []
+
+                user_interests = user.userinfo.interests.split(',')
+
+                # Buscar usuarios con al menos un interés en común
+                common_interest_users = []
+                statement = select(Users).join(UserInfo).where(
+                    or_(
+                        UserInfo.interests.ilike(f'%,{interest},%') for interest in user_interests
+                    )
+                )
+                print("USERS ", statement)
+                user_objects = session.scalars(statement).all()
+
+                for user in user_objects:
+                    user_info = UserCreationResponse(
+                        id=user.id,
+                        username=user.username,
+                        name=user.name,
+                        email=user.email,
+                        created_at=user.createdat.isoformat(),
+                        profilePic=user.profilePic
+                    )
+                    common_interest_users.append(user_info)
+
+                logger.info("Users with common interests retrieved successfully")
+                return common_interest_users
+            except SQLAlchemyError as e:
+                logger.error(f"SQLAlchemyError: {e}")
+                return [] 
