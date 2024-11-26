@@ -9,6 +9,7 @@ from sqlalchemy import select
 from business_logic.users.users_model import Base
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
+from geopy.distance import geodesic
 
 class Database:
     def __init__(self, engine):
@@ -392,36 +393,45 @@ class Database:
                 session.rollback()
                 raise e
             
-    def get_near_users(self, user_id: str):
+    def get_near_users(self, user_id: str, radius_km: float = 1.0):
         my_user = self.get_user_by_id(user_id)
-        (latitude, longitude) = (my_user.locationLat, my_user.locationLong)
+        latitude, longitude = my_user.locationLat, my_user.locationLong
+        user_location = (latitude, longitude)  # Coordenadas del usuario
         near_users = []
+
         with Session(self.engine) as session:
             try:
-                radius_km = 1
-                earth_radius_km = 6371.0
-                statement = select(Users).join(UserInfo).where(
-                    func.acos(
-                        func.sin(func.radians(UserInfo.locationLat)) * func.sin(func.radians(latitude)) +
-                        func.cos(func.radians(UserInfo.locationLat)) * func.cos(func.radians(latitude)) *
-                        func.cos(func.radians(UserInfo.locationLong) - func.radians(longitude))
-                    ) * earth_radius_km <= radius_km
-                )
+                # Recuperar todos los usuarios excepto el propio
+                statement = select(Users).join(UserInfo).where(Users.id != user_id)
                 user_objects = session.scalars(statement).all()
+
+                # Filtrar usuarios cercanos usando geopy
                 for user in user_objects:
-                    user_info = UserCreationResponse(
-                        id=user.id,
-                        username=user.username,
-                        name=user.name,
-                        email=user.email,
-                        created_at=user.createdat.isoformat(),
-                        profilePic=user.profilePic
-                    )
-                    near_users.append(user_info)
+                    user_info = session.get(UserInfo, user.id)
+                    if user_info:
+                        other_user_location = (user_info.locationLat, user_info.locationLong)
+                        distance_km = geodesic(user_location, other_user_location).kilometers
+
+                        if distance_km <= radius_km:
+                            near_users.append(
+                                UserCreationResponse(
+                                    id=user.id,
+                                    username=user.username,
+                                    name=user.name,
+                                    email=user.email,
+                                    created_at=user.createdat.isoformat(),
+                                    profilePic=user.profilePic
+                                )
+                            )
+
                 logger.info("Near users retrieved successfully")
                 return near_users
+
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
+                return []
+            except Exception as e:
+                logger.error(f"Error: {e}")
                 return []
             
     def get_users_with_common_interests(self, user_id: str):
