@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, MetaData, Table, Column, String, or_, func
+from sqlalchemy import create_engine, MetaData, Table, Column, String, or_, and_
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
@@ -393,7 +393,7 @@ class Database:
                 session.rollback()
                 raise e
             
-    def get_near_users(self, user_id: str, radius_km: float = 1.0):
+    def get_near_users(self, user_id: str, radius_km: float = 10.0):
         my_user = self.get_user_by_id(user_id)
         latitude, longitude = my_user.locationLat, my_user.locationLong
         user_location = (latitude, longitude)  # Coordenadas del usuario
@@ -444,14 +444,19 @@ class Database:
 
                 user_interests = user.userinfo.interests.split(',') if user.userinfo.interests else []
 
-                # Buscar usuarios con al menos un interés en común
+                if user_interests == []:
+                    logger.error("User has no interests")
+                    return []
+                
                 common_interest_users = []
                 statement = select(Users).join(UserInfo).where(
-                    or_(
-                        UserInfo.interests.ilike(f'%,{interest},%') for interest in user_interests
+                    and_(
+                        Users.id != user_id,  
+                        or_(
+                            UserInfo.interests.ilike(f'%,{interest},%') for interest in user_interests
+                        )
                     )
                 )
-                print("USERS ", statement)
                 user_objects = session.scalars(statement).all()
 
                 for user in user_objects:

@@ -381,3 +381,51 @@ def test_get_following_not_found(setup):
 
     assert response_get.json() == response_expected
 
+def test_get_near_users(setup):
+    response_post1 = client.post("/users/temp", json={"username":"user1", "name":"User One", "email":"user1@gmail.com", "password":"password1"})
+    response_post2 = client.post("/users/temp", json={"username":"user2", "name":"User Two", "email":"user2@gmail.com", "password":"password2"})
+    response_post3 = client.post("/users/temp", json={"username":"user3", "name":"User Three", "email":"user3@gmail.com", "password":"password3"})
+
+    user_id1 = response_post1.json()["id"]
+    user_id2 = response_post2.json()["id"]
+    user_id3 = response_post3.json()["id"] 
+
+    client.put(f"/users/{user_id1}", json={"supabase_id": user_id1, "birthdate": "", "locationLat": -34.6274, "locationLong": -58.4431, "profilePic": ""}) 
+    client.put(f"/users/{user_id2}", json={"supabase_id": user_id2, "birthdate": "", "locationLat": -34.6274, "locationLong": -58.4424, "profilePic": ""})  
+    client.put(f"/users/{user_id3}", json={"supabase_id": user_id3, "birthdate": "", "locationLat": 34.0522, "locationLong": -118.2437, "profilePic": ""})  
+
+
+    response_get = client.get(f"/users/near/{user_id1}/")
+
+    assert response_get.status_code == 200
+    response_data = response_get.json()
+    assert len(response_data) == 1
+    assert response_data[0]["username"] == "user2"
+
+def test_get_users_with_common_interests(setup):
+    response_post1 = client.post("/users/temp", json={"username":"user1", "name":"User One", "email":"user1@gmail.com", "password":"password1"})
+    response_post2 = client.post("/users/temp", json={"username":"user2", "name":"User Two", "email":"user2@gmail.com", "password":"password2"})
+    response_post3 = client.post("/users/temp", json={"username":"user3", "name":"User Three", "email":"user3@gmail.com", "password":"password3"})
+
+    user_id1 = response_post1.json()["id"]
+    user_id2 = response_post2.json()["id"]
+    user_id3 = response_post3.json()["id"]
+
+    client.put(f"/users/{user_id1}", json={"supabase_id": user_id1, "birthdate": "", "locationLat": -34.6274, "locationLong": -58.4431, "profilePic": ""}) 
+    client.put(f"/users/{user_id2}", json={"supabase_id": user_id2, "birthdate": "", "locationLat": -34.6274, "locationLong": -58.4424, "profilePic": ""})  
+    client.put(f"/users/{user_id3}", json={"supabase_id": user_id3, "birthdate": "", "locationLat": 34.0522, "locationLong": -118.2437, "profilePic": ""})  
+
+    client.put(f"/users/edit/{user_id1}", json={"interests": ",music,reading,"})
+    client.put(f"/users/edit/{user_id2}", json={"interests": ",music,sports,"})
+    client.put(f"/users/edit/{user_id3}", json={"interests": ",travel,reading,"})
+
+    response_get = client.get(f"/users/common-interests/{user_id1}/")
+
+    logger.info(f"Response status: {response_get.status_code}")
+    logger.info(f"Response data: {response_get.json()}")
+
+    assert response_get.status_code == 200
+    response_data = response_get.json()
+    assert len(response_data) == 2
+    assert response_data[0]["username"] in ["user2", "user3"]
+    assert response_data[1]["username"] in ["user2", "user3"]
