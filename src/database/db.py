@@ -442,7 +442,7 @@ class Database:
                     logger.error("User not found")
                     return []
 
-                user_interests = user.userinfo.interests.split(',')
+                user_interests = user.userinfo.interests.split(',') if user.userinfo.interests else []
 
                 # Buscar usuarios con al menos un interés en común
                 common_interest_users = []
@@ -469,4 +469,4 @@ class Database:
                 return common_interest_users
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
-                return [] 
+                return []
