@@ -7,3 +7,4 @@ SQLAlchemy
 psycopg2-binary
 httpx
 geopy
+requests

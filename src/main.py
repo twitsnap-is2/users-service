@@ -4,6 +4,8 @@ from fastapi.exceptions import RequestValidationError
 from routers.routers import router
 from middleware.error_middleware import ErrorResponse, ErrorResponseException
 from fastapi.middleware.cors import CORSMiddleware
+import os
+import requests
 
 
 app = FastAPI()
@@ -13,7 +15,68 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+
 )
+
+@app.middleware("http")
+async def useApiKey(request: Request, call_next):
+    # if the request is /docs/* or /openapi.json or the ENV is test, the middleware will not be executed
+
+    if request.url.path.startswith("/docs") or request.url.path.startswith("/openapi.json") or os.getenv("ENV") == "test":
+        return await call_next(request)
+
+    try:
+        bearer = request.headers.get("Authorization")
+        if not bearer:
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/503",
+                status=503,
+                title="Service Unavailable",
+                detail="API key is required",
+                instance=str(request.url.path),
+            )
+        token = bearer.split(" ")[1]
+        if not token:
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/503",
+                status=503,
+                title="Service Unavailable",
+                detail="API key is required",
+                instance=str(request.url.path),
+            )
+
+        # make a POST request to ENV API_SERVICE_MANAGER providing de token as the body
+
+        res = requests.post(
+            f"{os.getenv('API_SERVICE_MANAGER')}/manager/validate",
+            headers={"Authorization": f"Bearer {os.getenv('API_KEY')}"},
+            json={"APIKey": token},
+        )
+
+        if res.status_code != 200:
+            raise ErrorResponseException(
+                type="https://httpstatuses.com/503",
+                status=503,
+                title="Service Unavailable",
+                detail="API key is invalid",
+                instance=str(request.url.path),
+            )
+
+        
+        return await call_next(request)
+    except ErrorResponseException as e:
+        error_response = ErrorResponse(
+            type="about:blank",
+            title=e.title,
+            status=e.status,
+            detail=e.detail,
+            instance=str(request.url.path),
+        )
+        return JSONResponse(
+            status_code=e.status, content=error_response.model_dump()
+        )
+
+
 app.include_router(router)
 
 @app.exception_handler(HTTPException)

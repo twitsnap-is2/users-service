@@ -1,13 +1,15 @@
-from fastapi import APIRouter, status, HTTPException, Query
+from fastapi import APIRouter, status, HTTPException, Query, Depends
 from utils.engine import get_engine
 from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation, UserEmailResponse, UserInfoResponse, UserEmailExistsResponse, FollowResponse, FollowerAccountBase, UserEditProfile
 from business_logic.users.users_service import UserAccountService
 from middleware.error_middleware import ErrorResponse, ErrorResponseException
 from loguru import logger
 import os
+from fastapi.security import HTTPBearer
 
 router = APIRouter()
 services = UserAccountService(get_engine())
+security_scheme = HTTPBearer()
 
 @router.post("/users/temp", 
     response_model = UserCreationResponse,
@@ -18,7 +20,7 @@ services = UserAccountService(get_engine())
         422: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def create_user(user: UserAccountBase):
+async def create_user(user: UserAccountBase, token: str = Depends(security_scheme)):
     logger.debug(user.model_dump_json())
     try:
         user = services.insert_useraccount(user)
@@ -56,7 +58,7 @@ async def create_user(user: UserAccountBase):
         404: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def update_user(user_id: str, data: UserCompleteCreation):
+async def update_user(user_id: str, data: UserCompleteCreation, token: str = Depends(security_scheme)):
     try:
         if not services.update_useraccount(user_id, data):
             logger.error("User not found")
@@ -88,7 +90,7 @@ async def update_user(user_id: str, data: UserCompleteCreation):
         400: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def get_users(filter: str | None = None):
+async def get_users(filter: str | None = None, token: str = Depends(security_scheme)):
     try:
         if filter:
             users = services.get_usernames_starting_with(filter)
@@ -112,7 +114,7 @@ async def get_users(filter: str | None = None):
         404: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def get_user(user_id: str):
+async def get_user(user_id: str, token: str = Depends(security_scheme)):
     try:
         user = services.get_useraccount(user_id)
         if user:
@@ -145,7 +147,7 @@ async def get_user(user_id: str):
         404: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def get_email_by_username(username: str):
+async def get_email_by_username(username: str, token: str = Depends(security_scheme)):
     try:
         email = services.get_email_by_username(username)
         if email:
@@ -180,7 +182,7 @@ async def get_email_by_username(username: str):
         404: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def check_email_exists(email: str):
+async def check_email_exists(email: str, token: str = Depends(security_scheme)):
     try:
         res = services.check_email_exists(email)
         return UserEmailExistsResponse(exists=res["exists"])
@@ -197,7 +199,7 @@ async def check_email_exists(email: str):
         404: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def get_user_authors_info(user_id: str, authors: list[str] = Query(...)):
+async def get_user_authors_info(user_id: str, authors: list[str] = Query(...), token: str = Depends(security_scheme)):
     try:
         users = services.get_user_authors_info(user_id, authors)
         if users:
@@ -230,7 +232,7 @@ async def get_user_authors_info(user_id: str, authors: list[str] = Query(...)):
         404: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def get_user_authors_info_id(user_id: str, authors: list[str] = Query(...)):
+async def get_user_authors_info_id(user_id: str, authors: list[str] = Query(...), token: str = Depends(security_scheme)):
     try:
         users = services.get_user_authors_info_id(user_id, authors)
         if users:
@@ -263,7 +265,7 @@ async def get_user_authors_info_id(user_id: str, authors: list[str] = Query(...)
         404: {"model": ErrorResponse},
         500: {"model": ErrorResponse},
     },)
-async def search_users(username: str = Query(...)):
+async def search_users(username: str = Query(...), token: str = Depends(security_scheme)):
     try: 
         users = services.search_users(username)
         if users:
@@ -297,7 +299,7 @@ async def search_users(username: str = Query(...)):
         500: {"model": ErrorResponse},
     },
 )
-async def follow_user(follower_data: FollowerAccountBase, user_id: str):
+async def follow_user(follower_data: FollowerAccountBase, user_id: str, token: str = Depends(security_scheme)):
     try: 
         follow_action = services.follow_user(follower_user_id=follower_data.user_id, followed_user_id=user_id)
         print(follow_action)
@@ -328,7 +330,7 @@ async def follow_user(follower_data: FollowerAccountBase, user_id: str):
         500: {"model": ErrorResponse},
     },
 )
-async def unfollow_user(follower_data: FollowerAccountBase, user_id: str):
+async def unfollow_user(follower_data: FollowerAccountBase, user_id: str, token: str = Depends(security_scheme)):
     try: 
         unfollow_action = services.unfollow_user(follower_user_id=follower_data.user_id, followed_user_id=user_id)
         if unfollow_action:
@@ -358,7 +360,7 @@ async def unfollow_user(follower_data: FollowerAccountBase, user_id: str):
         500: {"model": ErrorResponse},
     },
 )
-async def get_followers(user_id: str):
+async def get_followers(user_id: str, token: str = Depends(security_scheme)):
     try: 
         user_followers = services.get_followers(user_id)
         if user_followers is None:
@@ -387,7 +389,7 @@ async def get_followers(user_id: str):
         500: {"model": ErrorResponse},
     },
 )
-async def get_following(user_id: str):
+async def get_following(user_id: str, token: str = Depends(security_scheme)):
     try: 
         user_followers = services.get_following(user_id)
         if user_followers is None:
@@ -415,7 +417,7 @@ async def get_following(user_id: str):
         500: {"model": ErrorResponse},
     },
 )
-async def edit_user_profile(user_id: str, data: UserEditProfile):
+async def edit_user_profile(user_id: str, data: UserEditProfile, token: str = Depends(security_scheme)):
     try:
         if not services.update_user_profile(user_id, data):
             logger.error("User not found")
