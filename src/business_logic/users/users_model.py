@@ -43,12 +43,15 @@ class UserInfo(Base):
     birthdate = Column(String)
     locationLat = Column(String)
     locationLong = Column(String)
+    country = Column(String)
+    isoCountry = Column(String)
+    region = Column(String)
     interests = Column(String)
 
     user = relationship("Users", back_populates="userinfo", uselist=False)
 
     def __repr__(self) -> str:
-        return f"UserInfo(id={self.id!r}, user_id={self.user_id!r}, birthdate={self.birthdate!r}, locationLat={self.locationLat!r}, locationLong={self.locationLong!r}, interests={self.interests!r})" 
+        return f"UserInfo(id={self.id!r}, user_id={self.user_id!r}, birthdate={self.birthdate!r}, locationLat={self.locationLat!r}, locationLong={self.locationLong!r}, interests={self.interests!r}, country={self.country!r}, isoCountry={self.isoCountry!r}, region={self.region!r})" 
 
 class Followers(Base):
     __tablename__ = "followers"

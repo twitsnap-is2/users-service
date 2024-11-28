@@ -27,6 +27,9 @@ class UserInfoResponse(UserCreationResponse):
     birthdate: str | None = None
     locationLat: float | None = None
     locationLong: float | None = None
+    country: str | None = None
+    isoCountry: str | None = None
+    region: str | None = None
     interests: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -36,6 +39,9 @@ class UserCompleteCreation(BaseModel):
     birthdate: str
     locationLat: float
     locationLong: float
+    country: str | None = None
+    isoCountry: str | None = None
+    region: str | None = None
     profilePic: str | None = None
 
 class UserEmailResponse(BaseModel):

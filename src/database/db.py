@@ -85,6 +85,9 @@ class Database:
                     birthdate=user.userinfo.birthdate if user.userinfo else None,
                     locationLat=user.userinfo.locationLat  if user.userinfo else None,
                     locationLong=user.userinfo.locationLong  if user.userinfo else None,
+                    country=user.userinfo.country if user.userinfo else None,
+                    isoCountry=user.userinfo.isoCountry if user.userinfo else None,
+                    region=user.userinfo.region if user.userinfo else None,
                     interests=user.userinfo.interests if user.userinfo else None
                 )
                 logger.info("User retrieved successfully")  
@@ -155,7 +158,7 @@ class Database:
                 user.id = data.supabase_id
                 logger.info(f"User id: {user.id}, profilePic: {data.profilePic}")
                 user.profilePic = data.profilePic
-                user.userinfo = UserInfo(birthdate=data.birthdate, locationLat=data.locationLat, locationLong=data.locationLong)
+                user.userinfo = UserInfo(birthdate=data.birthdate, locationLat=data.locationLat, locationLong=data.locationLong, country=data.country, isoCountry=data.isoCountry, region=data.region)
                 session.commit()
                 logger.info("User updated successfully")
                 return user
