@@ -1,5 +1,7 @@
+import json
 from fastapi import APIRouter, status, HTTPException, Query, Depends
 from utils.engine import get_engine
+from utils.rabbitmq import MetricsChannel
 from business_logic.users.users_schemas import UserAccountBase, UserCreationResponse, UserCompleteCreation, UserEmailResponse, UserInfoResponse, UserEmailExistsResponse, FollowResponse, FollowerAccountBase, UserEditProfile
 from business_logic.users.users_service import UserAccountService
 from middleware.error_middleware import ErrorResponse, ErrorResponseException
@@ -7,6 +9,9 @@ from loguru import logger
 import os
 from fastapi.security import HTTPBearer
 
+
+
+channel = MetricsChannel()
 router = APIRouter()
 services = UserAccountService(get_engine())
 security_scheme = HTTPBearer()
@@ -64,6 +69,17 @@ async def update_user(user_id: str, data: UserCompleteCreation, token: str = Dep
             logger.error("User not found")
             raise HTTPException(status_code=404, detail="User not found")
         logger.info("User updated")
+        metric_data = {
+            "data": json.dumps({
+                "providedBy": "snaps-service",
+                "body": {
+                    "content": "Some content",
+                    "createdAt": "2024-11-29T00:00:00Z",
+                    "hashtags": ["#hashtag1", "#hashtag2"]
+                }
+            })
+        }
+        channel.sendMetrics(metric_data)
         return
 
     except HTTPException as e:
@@ -97,6 +113,17 @@ async def get_users(filter: str | None = None, token: str = Depends(security_sch
         else:
             users = services.get_useraccounts()
         logger.info("User list retrieved successfully")
+        metric_data = {
+            "data": json.dumps({
+                "providedBy": "snaps-service",
+                "body": {
+                    "content": "Some content",
+                    "createdAt": "2024-11-29T00:00:00Z",
+                    "hashtags": ["#hashtag1", "#hashtag2"]
+                }
+            })
+        }
+        channel.sendMetrics(metric_data)
         return users
     except ValueError as e:
         logger.error(f"Error retrieving users: {e}")

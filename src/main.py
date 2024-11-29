@@ -17,7 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 
 )
-
+""" 
 @app.middleware("http")
 async def useApiKey(request: Request, call_next):
     # if the request is /docs/* or /openapi.json or the ENV is test, the middleware will not be executed
@@ -44,6 +44,7 @@ async def useApiKey(request: Request, call_next):
                 detail="API key is required",
                 instance=str(request.url.path),
             )
+            
 
         # make a POST request to ENV API_SERVICE_MANAGER providing de token as the body
 
@@ -62,7 +63,7 @@ async def useApiKey(request: Request, call_next):
                 instance=str(request.url.path),
             )
 
-        
+         
         return await call_next(request)
     except ErrorResponseException as e:
         error_response = ErrorResponse(
@@ -75,8 +76,7 @@ async def useApiKey(request: Request, call_next):
         return JSONResponse(
             status_code=e.status, content=error_response.model_dump()
         )
-
-
+ """
 app.include_router(router)
 
 @app.exception_handler(HTTPException)
