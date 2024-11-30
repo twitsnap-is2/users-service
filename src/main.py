@@ -17,7 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 
 )
-""" 
+
 @app.middleware("http")
 async def useApiKey(request: Request, call_next):
     # if the request is /docs/* or /openapi.json or the ENV is test, the middleware will not be executed
@@ -76,7 +76,7 @@ async def useApiKey(request: Request, call_next):
         return JSONResponse(
             status_code=e.status, content=error_response.model_dump()
         )
- """
+
 app.include_router(router)
 
 @app.exception_handler(HTTPException)
