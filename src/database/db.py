@@ -478,29 +478,3 @@ class Database:
             except SQLAlchemyError as e:
                 logger.error(f"SQLAlchemyError: {e}")
                 return []
-            
-    def get_users_grouped_by_country(self):
-        users_info = []
-        with Session(self.engine) as session:
-            try:
-                statement = select(Users).group_by(UserInfo.country)
-                users = session.execute(statement).all()
-                for user in users:
-                    user_info = UserCreationResponse(
-                        id=user.id,
-                        username=user.username,
-                        name=user.name,
-                        email=user.email,
-                        created_at=user.createdat.isoformat(),
-                        profilePic=user.profilePic
-                    )
-                    users_info.append(user_info)
-                    
-                logger.info("Users grouped by country retrieved successfully")
-                return users_info
-            except SQLAlchemyError as e:
-                logger.error(f"SQLAlchemyError: {e}")
-                return []
-            except Exception as e:
-                logger.error(f"Error: {e}")
-                return []

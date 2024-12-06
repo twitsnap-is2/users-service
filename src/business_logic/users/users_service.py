@@ -63,7 +63,3 @@ class UserAccountService:
     
     def get_users_with_common_interests(self, user_id:str):
         return self.database.get_users_with_common_interests(user_id)
-    
-    def get_users_grouped_by_country(self):
-        return self.database.get_users_grouped_by_country()
-
